@@ -132,21 +132,37 @@ The SDK does not silently degrade or bypass these guarantees.
 The Axiom SDK applies a deterministic, auditable transformation pipeline:
 
 ```
-Raw Input
-    ↓
-Normalization
-    ↓
-Entity Extraction
-    ↓
-Role Assignment
-    ↓
-Relationship Graph
-    ↓
-Identifier Removal
-    ↓
-Context Minimization
-    ↓
-Transformed Context
+  ┌──────────────────────┐
+  │      Raw Input       │
+  └──────────┬───────────┘
+             ▼
+  ┌──────────────────────┐
+  │    Normalization     │
+  └──────────┬───────────┘
+             ▼
+  ┌──────────────────────┐
+  │  Entity Extraction   │
+  └──────────┬───────────┘
+             ▼
+  ┌──────────────────────┐
+  │   Role Assignment    │
+  └──────────┬───────────┘
+             ▼
+  ┌──────────────────────┐
+  │  Relationship Graph  │
+  └──────────┬───────────┘
+             ▼
+  ┌──────────────────────┐
+  │  Identifier Removal  │
+  └──────────┬───────────┘
+             ▼
+  ┌──────────────────────┐
+  │ Context Minimization │
+  └──────────┬───────────┘
+             ▼
+  ╔══════════════════════╗
+  ║ Transformed Context  ║
+  ╚══════════════════════╝
 ```
 
 Each stage preserves reasoning-relevant structure while removing identifying information.
