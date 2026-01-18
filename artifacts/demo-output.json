@@ -1,7 +1,7 @@
 {
   "metadata": {
     "description": "Axiom SDK Demo Output",
-    "generated": "2026-01-18T22:03:50.974Z",
+    "generated": "2026-01-18T22:27:35.196Z",
     "version": "1.0",
     "mode": "simulator"
   },
@@ -80,15 +80,15 @@
     "report": "<1184 bytes>",
     "measurement": "simulator_measurement_0000000000000000000000000000000000000000000000000000000000000000",
     "configHash": "68ea4fc67f05da9176eb008f47423b17e3e066dbcfff06d489cf60c448cac9df",
-    "sessionId": "4c834663d2bc00e59bd2a3ba402993d6",
+    "sessionId": "9aea2b9ff85f2245f667ca7f2c6d976e",
     "outputHash": "af6cc5967882df546d73a0b6f53e275b6f28a8e672c66b4a43ae2eff08196f35",
-    "timestamp": 1768773830965,
+    "timestamp": 1768775255193,
     "version": "1.0"
   },
   "verificationHint": {
     "expectedMeasurement": "simulator_measurement_0000000000000000000000000000000000000000000000000000000000000000",
     "platform": "sev-snp",
-    "timestamp": 1768773830965
+    "timestamp": 1768775255193
   },
   "verdict": {
     "valid": false,
@@ -108,6 +108,6 @@
     "warnings": [
       "Simulator report detected - no real platform authentication"
     ],
-    "verifiedAt": 1768773830973
+    "verifiedAt": 1768775255195
   }
 }
