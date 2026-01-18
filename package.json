@@ -1,0 +1,27 @@
+{
+  "name": "@axiom/sdk",
+  "version": "0.1.0",
+  "description": "Local semantic transformation for private AI reasoning",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test --experimental-strip-types tests/boundary.test.ts"
+  },
+  "keywords": [
+    "ai",
+    "privacy",
+    "semantic",
+    "transformation",
+    "local"
+  ],
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist"
+  ]
+}
+
