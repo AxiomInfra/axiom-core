@@ -267,6 +267,11 @@ export interface EnclaveRequest {
    * Random nonce (256-bit).
    */
   nonce: Uint8Array;
+
+  /**
+   * Attestation timestamp for binding (milliseconds since epoch).
+   */
+  timestamp: number;
 }
 
 /**

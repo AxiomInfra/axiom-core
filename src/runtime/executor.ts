@@ -130,6 +130,7 @@ export class Executor {
       sessionId: Buffer.from(session.sessionId, "hex"),
       configHash: session.configHash,
       nonce: Buffer.from(session.nonce || "00".repeat(32), "hex"),
+      timestamp: session.createdAt,
     };
 
     // Execute in enclave
@@ -154,7 +155,8 @@ export class Executor {
     const attestationEvidence = this.enclaveBridge.createEvidence(
       response,
       session.sessionId,
-      session.configHash
+      session.configHash,
+      request.timestamp
     );
 
     // Finalize session

@@ -138,7 +138,8 @@ class SimulatorEnclaveRunner implements IEnclaveRunner {
     const fakeReport = this.generateFakeAttestationReport(
       request.sessionId,
       Buffer.from(request.configHash, "hex"),
-      outputHash
+      outputHash,
+      request.timestamp
     );
 
     // Fake measurement (deterministic for testing)
@@ -169,7 +170,8 @@ class SimulatorEnclaveRunner implements IEnclaveRunner {
   private generateFakeAttestationReport(
     sessionId: Uint8Array,
     configHash: Buffer,
-    outputHash: Buffer
+    outputHash: Buffer,
+    timestamp: number
   ): Uint8Array {
     // Create a fake report structure
     // In real implementation, this would be actual SEV-SNP report format
@@ -187,6 +189,9 @@ class SimulatorEnclaveRunner implements IEnclaveRunner {
     reportData.update(sessionId);
     reportData.update(configHash);
     reportData.update(outputHash);
+    const timestampBytes = Buffer.alloc(8);
+    timestampBytes.writeBigUInt64BE(BigInt(timestamp), 0);
+    reportData.update(timestampBytes);
     const reportDataHash = reportData.digest();
     reportDataHash.copy(report, 8); // Offset 8 for report_data
 
@@ -269,7 +274,8 @@ export class EnclaveBridge {
   createEvidence(
     response: EnclaveResponse,
     sessionId: string,
-    configHash: string
+    configHash: string,
+    timestamp: number = Date.now()
   ): AttestationEvidence {
     return {
       platform: this.getPlatform() === "sev-snp-simulator" ? "sev-snp" : "sev-snp",
@@ -278,7 +284,7 @@ export class EnclaveBridge {
       configHash,
       sessionId,
       outputHash: Buffer.from(response.outputHash).toString("hex"),
-      timestamp: Date.now(),
+      timestamp,
       signature: response.signature,
       version: "1.0",
     };
