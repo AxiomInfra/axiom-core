@@ -2,10 +2,9 @@
 
 **Local semantic transformation for private AI reasoning.**
 
-The Axiom SDK is the open-core, local execution layer of the Axiom system.  
-It enables cloud-based language models to reason over sensitive, local data **without the raw data ever leaving the device**.
+The Axiom SDK is the open-core, local execution layer of the Axiom system. It enables cloud-based language models to reason over sensitive, local data—**without the raw data ever leaving the device**.
 
-The SDK performs semantic transformation locally, removing identifying information while preserving the relational structure required for reasoning.
+The SDK performs semantic transformation locally: removing identifying information while preserving the relational structure required for reasoning.
 
 ---
 
@@ -14,9 +13,10 @@ The SDK performs semantic transformation locally, removing identifying informati
 The Axiom SDK is **infrastructure**, not an application.
 
 It is designed to be embedded into systems where:
-- private data cannot be transmitted to the cloud
-- frontier models are still required for reasoning
-- correctness, auditability, and trust boundaries matter
+
+- Private data cannot be transmitted to the cloud
+- Frontier models are still required for reasoning
+- Correctness, auditability, and trust boundaries matter
 
 At a high level, the SDK:
 
@@ -25,7 +25,7 @@ At a high level, the SDK:
 - Preserves entities, roles, and relationships
 - Enforces a strict boundary between local context and cloud models
 
-Raw data never leaves the device.
+**Raw data never leaves the device.**
 
 ---
 
@@ -40,7 +40,7 @@ To avoid ambiguity, the Axiom SDK is explicitly **not**:
 - A local language model or inference engine
 - A cloud routing or billing layer
 
-Those concerns are intentionally outside the scope of this repository.
+These concerns are intentionally outside the scope of this repository.
 
 ---
 
@@ -50,7 +50,7 @@ Most privacy approaches treat **identity and meaning as inseparable**.
 
 Axiom is built on a different assumption:
 
-> Language models reason over structure and relationships, not names.
+> Language models reason over structure and relationships—not names.
 
 Instead of encrypting or redacting text, the SDK performs **local semantic transformation**:
 
@@ -60,8 +60,7 @@ Instead of encrypting or redacting text, the SDK performs **local semantic trans
 4. Identifiers are removed before serialization
 5. Only transformed context is exposed to cloud models
 
-The transformation is intentionally **lossy**, but controlled.  
-Correctness is measured in **reasoning fidelity**, not textual similarity.
+The transformation is intentionally **lossy**, but controlled. Correctness is measured in **reasoning fidelity**, not textual similarity.
 
 ---
 
@@ -69,16 +68,25 @@ Correctness is measured in **reasoning fidelity**, not textual similarity.
 
 The Axiom system enforces a hard trust boundary.
 
-### Local Environment (This SDK)
-- Semantic analysis and transformation
-- Entity and relationship abstraction
-- Context filtering and minimization
-- Optional hardware-backed execution where available
-
-### Cloud Boundary
-- Receives transformed, non-identifying context only
-- Performs reasoning using external models
-- Never receives raw private data
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Local Environment (This SDK)                                   │
+│                                                                 │
+│  • Semantic analysis and transformation                         │
+│  • Entity and relationship abstraction                          │
+│  • Context filtering and minimization                           │
+│  • Optional hardware-backed execution                           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼ Transformed context only
+┌─────────────────────────────────────────────────────────────────┐
+│  Cloud Boundary                                                 │
+│                                                                 │
+│  • Receives non-identifying context only                        │
+│  • Performs reasoning using external models                     │
+│  • Never receives raw private data                              │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 This repository operates entirely on the **local side** of that boundary.
 
@@ -101,43 +109,47 @@ const result = await axiom.reason({
   task: "analyze obligations and risks",
   model: "gpt-5",
 });
-
 ```
-### Guarantees of this call
+
+### Guarantees
 
 When invoking `axiom.reason(...)`, the SDK provides the following guarantees:
 
-- Raw input data is never transmitted by the SDK
-- All semantic transformation occurs locally
-- No implicit network calls are performed
-- Boundary violations fail explicitly and immediately
-- Returned outputs can be re-inflated locally by the caller
+| Guarantee | Description |
+|-----------|-------------|
+| **No raw data transmission** | Raw input data is never transmitted by the SDK |
+| **Local transformation** | All semantic transformation occurs locally |
+| **Explicit network calls** | No implicit network calls are performed |
+| **Fail-fast boundaries** | Boundary violations fail explicitly and immediately |
+| **Local reinflation** | Returned outputs can be reinflated locally by the caller |
 
 The SDK does not silently degrade or bypass these guarantees.
 
 ---
 
-## Semantic Pipeline (Conceptual)
+## Semantic Pipeline
 
 The Axiom SDK applies a deterministic, auditable transformation pipeline:
+
 ```
 Raw Input
-↓
+    ↓
 Normalization
-↓
+    ↓
 Entity Extraction
-↓
+    ↓
 Role Assignment
-↓
+    ↓
 Relationship Graph
-↓
+    ↓
 Identifier Removal
-↓
+    ↓
 Context Minimization
-↓
+    ↓
 Transformed Context
 ```
-Each stage is designed to preserve reasoning-relevant structure while removing identifying information.
+
+Each stage preserves reasoning-relevant structure while removing identifying information.
 
 ---
 
@@ -146,31 +158,30 @@ Each stage is designed to preserve reasoning-relevant structure while removing i
 Internally, the SDK does not operate on free-form text.
 
 All semantic structure is represented using:
-- entities
-- roles
-- relations
-- values
 
-This abstraction allows reasoning to survive identity removal while remaining interpretable and auditable.
+| Concept | Purpose |
+|---------|---------|
+| **Entities** | Discrete objects or actors in the context |
+| **Roles** | Semantic function of each entity |
+| **Relations** | Connections between entities |
+| **Values** | Attributes and properties |
 
-Schemas are explicitly defined and evolve conservatively.
+This abstraction allows reasoning to survive identity removal while remaining interpretable and auditable. Schemas are explicitly defined and evolve conservatively.
 
 ---
 
-## Security Model (SDK Scope)
+## Security Model
 
 ### Hard Guarantees
 
 Within its execution scope, the SDK enforces:
 
-- No raw text serialization
-- No implicit network access
-- Explicit local-to-cloud boundary enforcement
-- Zero data retention by default
+- ✓ No raw text serialization
+- ✓ No implicit network access
+- ✓ Explicit local-to-cloud boundary enforcement
+- ✓ Zero data retention by default
 
 All guarantees apply only to SDK-controlled execution paths.
-
----
 
 ### Trust Assumptions
 
@@ -180,7 +191,7 @@ The SDK assumes:
 - The runtime environment is not actively malicious
 - Hardware-backed isolation may be available, but is not required
 
-The SDK is not designed to be safe under fully compromised host conditions.
+The SDK is **not** designed to be safe under fully compromised host conditions.
 
 ---
 
@@ -194,12 +205,7 @@ This repository includes a `benchmarks/` directory focused on:
 - Logical consistency
 - Reasoning equivalence between raw and transformed context
 
-Benchmarks are:
-- Domain-specific
-- Limited in scope
-- Explicitly non-generalized
-
-No claims of universal accuracy are made.
+Benchmarks are domain-specific, limited in scope, and explicitly non-generalized. No claims of universal accuracy are made.
 
 ---
 
@@ -207,19 +213,17 @@ No claims of universal accuracy are made.
 
 ```
 axiom-sdk/
-├─ src/ # core SDK implementation
-├─ benchmarks/ # semantic fidelity evaluation
-├─ examples/ # minimal integration examples
-├─ docs/ # design notes and specifications
-├─ tests/ # unit and boundary tests
-├─ README.md
-├─ ARCHITECTURE.md
-├─ SECURITY.md
-├─ ROADMAP.md
-└─ LICENSE
+├── src/           # Core SDK implementation
+├── benchmarks/    # Semantic fidelity evaluation
+├── examples/      # Minimal integration examples
+├── docs/          # Design notes and specifications
+├── tests/         # Unit and boundary tests
+├── README.md
+├── ARCHITECTURE.md
+├── SECURITY.md
+├── ROADMAP.md
+└── LICENSE
 ```
-
-Each directory has a narrowly defined responsibility.
 
 ---
 
@@ -227,7 +231,7 @@ Each directory has a narrowly defined responsibility.
 
 The Axiom SDK is under active development.
 
-Current focus areas include:
+**Current focus areas:**
 
 - Stable semantic abstractions
 - Deterministic transformation pipelines
@@ -240,7 +244,7 @@ Public APIs may evolve as constraints are better understood.
 
 ## Roadmap
 
-A high-level engineering roadmap is maintained in `ROADMAP.md`.
+A high-level engineering roadmap is maintained in [`ROADMAP.md`](ROADMAP.md).
 
 This roadmap is directional and does not include timelines or commitments.
 
@@ -257,13 +261,13 @@ Contributions are welcome where they improve:
 - Documentation quality
 - Developer ergonomics
 
-Please review `CONTRIBUTING.md` before submitting changes.
+Please review [`CONTRIBUTING.md`](CONTRIBUTING.md) before submitting changes.
 
 ---
 
 ## License
 
-The Axiom SDK is released under the Apache 2.0 License.
+The Axiom SDK is released under the **Apache 2.0 License**.
 
 This repository represents the open-core component of the Axiom system.
 
@@ -271,13 +275,14 @@ This repository represents the open-core component of the Axiom system.
 
 ## Contact
 
-- General: hello@axiom.ai  
-- Security: security@axiom.ai  
-- Organization: https://github.com/axiom-ai  
+| Channel | Address |
+|---------|---------|
+| General | hello@axiom.ai |
+| Security | security@axiom.ai |
+| GitHub | [github.com/axiom-ai](https://github.com/axiom-ai) |
 
 ---
 
-Axiom exists to make advanced reasoning possible  
-**without surrendering ownership of data**.
-
-
+<p align="center">
+  <em>Axiom exists to make advanced reasoning possible<br><strong>without surrendering ownership of data.</strong></em>
+</p>
