@@ -1,0 +1,103 @@
+{
+  "metadata": {
+    "description": "Example attestation evidence from Axiom SDK v1.0 (simulator mode)",
+    "generated": "2026-01-18T12:00:00.000Z",
+    "version": "1.0",
+    "mode": "simulator"
+  },
+  "transformedContext": {
+    "entities": [
+      {
+        "syntheticId": "ENTITY_0001",
+        "role": "Actor",
+        "attributes": {
+          "type": "name",
+          "position": 0
+        }
+      },
+      {
+        "syntheticId": "ENTITY_0002",
+        "role": "Value",
+        "attributes": {
+          "type": "currency",
+          "position": 24
+        }
+      },
+      {
+        "syntheticId": "ENTITY_0003",
+        "role": "Obligation",
+        "attributes": {
+          "type": "name",
+          "position": 37
+        }
+      },
+      {
+        "syntheticId": "ENTITY_0004",
+        "role": "Participant",
+        "attributes": {
+          "type": "name",
+          "position": 54
+        }
+      },
+      {
+        "syntheticId": "ENTITY_0005",
+        "role": "Temporal",
+        "attributes": {
+          "type": "date",
+          "position": 68
+        }
+      }
+    ],
+    "relations": [
+      {
+        "type": "signed",
+        "from": "ENTITY_0001",
+        "to": "ENTITY_0003"
+      },
+      {
+        "type": "with",
+        "from": "ENTITY_0001",
+        "to": "ENTITY_0004"
+      },
+      {
+        "type": "on",
+        "from": "ENTITY_0003",
+        "to": "ENTITY_0005"
+      },
+      {
+        "type": "for",
+        "from": "ENTITY_0003",
+        "to": "ENTITY_0002"
+      }
+    ],
+    "task": "Analyze this business transaction"
+  },
+  "attestationEvidence": {
+    "platform": "sev-snp",
+    "measurement": "SIMULATED_MEASUREMENT_ABC123456789DEF",
+    "configHash": "a3c4f2d8e9b1234567890abcdef12345678901234567890abcdef123456789012",
+    "sessionId": "f8e7d6c5b4a39281706f5e4d3c2b1a09",
+    "outputHash": "7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b",
+    "timestamp": 1737201600000,
+    "version": "1.0",
+    "report": "SIMULATED_SEV_SNP_REPORT_BASE64_ENCODED_1184_BYTES..."
+  },
+  "verificationHint": {
+    "expectedMeasurement": "SIMULATED_MEASUREMENT_ABC123456789DEF",
+    "platform": "sev-snp",
+    "timestamp": 1737201600000
+  },
+  "rawInput": {
+    "note": "Raw input is shown here for demonstration only. In production, raw input NEVER leaves the enclave.",
+    "context": "John Doe signed a $50,000 contract with Acme Corp on 2026-01-15",
+    "task": "Analyze this business transaction"
+  },
+  "transformation_stats": {
+    "input_length": 67,
+    "entities_extracted": 5,
+    "relations_built": 4,
+    "identifiers_masked": 5,
+    "execution_time_ms": 12
+  }
+}
+

@@ -1,5 +1,7 @@
 # Axiom SDK
 
+![status](https://img.shields.io/badge/status-1.0.0--alpha.1-blue)
+
 **Local semantic transformation for private AI reasoning.**
 
 The Axiom SDK is the open-core, local execution layer of the Axiom system. It enables cloud-based language models to reason over sensitive, local data—**without the raw data ever leaving the device**.
@@ -94,6 +96,19 @@ This repository operates entirely on the **local side** of that boundary.
 
 ## Basic Usage
 
+### Quick Start (Local Demo)
+
+```bash
+npm install
+npm run demo
+```
+
+If your shell blocks npm scripts, run:
+
+```bash
+node --experimental-strip-types demo/demo.js
+```
+
 The public SDK surface is intentionally minimal.
 
 ```ts
@@ -102,6 +117,7 @@ import { Axiom } from "@axiom/sdk";
 const axiom = new Axiom({
   securityTier: "standard",
   enclave: "auto",
+  policyVersion: "v1",
 });
 
 const result = await axiom.reason({
@@ -215,7 +231,7 @@ The SDK is **not** designed to be safe under fully compromised host conditions.
 
 Because semantic transformation is intentionally lossy, fidelity must be measured.
 
-This repository includes a `benchmarks/` directory focused on:
+This repository includes a roadmap for semantic fidelity evaluation focused on:
 
 - Task-level correctness
 - Logical consistency
@@ -230,10 +246,11 @@ Benchmarks are domain-specific, limited in scope, and explicitly non-generalized
 ```
 axiom-sdk/
 ├── src/           # Core SDK implementation
-├── benchmarks/    # Semantic fidelity evaluation
-├── examples/      # Minimal integration examples
+├── demo/          # Demo script
+├── artifacts/     # Example evidence/verdicts
 ├── docs/          # Design notes and specifications
 ├── tests/         # Unit and boundary tests
+├── STATUS.md      # Consolidated project status
 ├── README.md
 ├── ARCHITECTURE.md
 ├── SECURITY.md
@@ -268,16 +285,7 @@ This roadmap is directional and does not include timelines or commitments.
 
 ## Contributing
 
-This project maintains high standards for correctness and clarity.
-
-Contributions are welcome where they improve:
-
-- Semantic correctness
-- Security guarantees
-- Documentation quality
-- Developer ergonomics
-
-Please review [`CONTRIBUTING.md`](CONTRIBUTING.md) before submitting changes.
+This project maintains high standards for correctness and clarity. Contributions are welcome for improvements to semantic correctness, security guarantees, documentation quality, and developer ergonomics.
 
 ---
 
@@ -293,9 +301,9 @@ This repository represents the open-core component of the Axiom system.
 
 | Channel | Address |
 |---------|---------|
-| General | hello@axiom.ai |
-| Security | security@axiom.ai |
-| GitHub | [github.com/axiom-ai](https://github.com/axiom-ai) |
+| General | hello@axiom-sdk.dev |
+| Security | security@axiom-sdk.dev |
+| GitHub | [github.com/axiom-sdk/axiom-sdk](https://github.com/axiom-sdk/axiom-sdk) |
 
 ---
 

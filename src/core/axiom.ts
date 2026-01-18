@@ -1,11 +1,12 @@
 import type {
   AxiomConfig,
   ReasonInput,
-  TransformedContext,
+  ReasonResult,
 } from "./config.ts";
 import { ConfigurationError } from "./errors.ts";
 import { Executor } from "../runtime/executor.ts";
 import { assertNoNetworkAccess } from "../security/guarantees.ts";
+import { Session } from "../runtime/session.ts";
 
 /**
  * Axiom SDK main class.
@@ -27,7 +28,7 @@ export class Axiom {
   constructor(config: AxiomConfig) {
     this.validateConfig(config);
     this.config = config;
-    this.executor = new Executor();
+    this.executor = new Executor(config);
 
     // Verify no network access at initialization
     assertNoNetworkAccess();
@@ -42,15 +43,28 @@ export class Axiom {
       throw new ConfigurationError("Configuration is required");
     }
 
-    if (config.securityTier !== "standard") {
+    if (config.securityTier !== "standard" && config.securityTier !== "attested") {
       throw new ConfigurationError(
-        `Invalid securityTier: ${config.securityTier}. Only "standard" is supported.`
+        `Invalid securityTier: ${config.securityTier}. Must be "standard" or "attested".`
       );
     }
 
-    if (config.enclave !== "auto" && config.enclave !== "none") {
+    if (config.enclave !== "auto" && config.enclave !== "required" && config.enclave !== "none") {
       throw new ConfigurationError(
-        `Invalid enclave: ${config.enclave}. Must be "auto" or "none".`
+        `Invalid enclave: ${config.enclave}. Must be "auto", "required", or "none".`
+      );
+    }
+
+    if (config.policyVersion !== "v1") {
+      throw new ConfigurationError(
+        `Invalid policyVersion: ${config.policyVersion}. Must be "v1".`
+      );
+    }
+
+    // Validate enclave + securityTier combinations
+    if (config.securityTier === "attested" && config.enclave === "none") {
+      throw new ConfigurationError(
+        'Invalid configuration: securityTier "attested" requires enclave to be "auto" or "required"'
       );
     }
   }
@@ -61,7 +75,7 @@ export class Axiom {
    * Pipeline: context → distiller → abstraction → masking → boundary validation
    *
    * @param input - Reasoning input with context, task, and optional model
-   * @returns Transformed context safe for boundary crossing
+   * @returns Result with transformed context and optional attestation evidence
    *
    * @remarks
    * - No network calls are performed
@@ -69,19 +83,67 @@ export class Axiom {
    * - All transformation is local and deterministic
    * - Raw input never appears in the output
    * - Boundary violations fail explicitly
+   * - Attested tier generates cryptographic attestation evidence
    */
-  async reason(input: ReasonInput): Promise<TransformedContext> {
+  async reason(input: ReasonInput): Promise<ReasonResult> {
     this.validateReasonInput(input);
 
+    // Create session for this execution
+    const session = Session.create(this.config);
+
+    // Route execution based on security tier
+    if (this.config.securityTier === "attested") {
+      return await this.executeAttested(input, session);
+    } else {
+      return await this.executeStandard(input, session);
+    }
+  }
+
+  /**
+   * Execute transformation in standard tier (software-only).
+   * @private
+   */
+  private async executeStandard(
+    input: ReasonInput,
+    session: Session
+  ): Promise<ReasonResult> {
     // Execute the transformation pipeline
-    // The executor handles: distill → abstract → mask → validate
     const transformedContext = this.executor.execute(
       input.context,
       input.task,
       input.model
     );
 
-    return transformedContext;
+    // Compute output hash and bind to session
+    const { hash } = await import("./canonical.ts");
+    const outputHash = hash(transformedContext);
+    session.setOutputHash(outputHash);
+    session.finalize();
+
+    // Return result without attestation evidence (standard tier)
+    return {
+      transformedContext,
+      renderedPrompt: undefined, // Could add LLM prompt rendering here
+    };
+  }
+
+  /**
+   * Execute transformation in attested tier (TEE with attestation).
+   * @private
+   */
+  private async executeAttested(
+    input: ReasonInput,
+    session: Session
+  ): Promise<ReasonResult> {
+    // Execute via enclave (will be routed by executor in next step)
+    const result = await this.executor.executeAttested(
+      input.context,
+      input.task,
+      input.model,
+      session
+    );
+
+    return result;
   }
 
   /**

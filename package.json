@@ -1,27 +1,49 @@
 {
   "name": "@axiom/sdk",
-  "version": "0.1.0",
-  "description": "Local semantic transformation for private AI reasoning",
+  "version": "1.0.0-alpha.1",
+  "description": "Local semantic transformation for private AI reasoning with TEE attestation",
+  "author": "Axiom SDK Team <hello@axiom-sdk.dev>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/axiom-sdk/axiom-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/axiom-sdk/axiom-sdk/issues"
+  },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "node --test --experimental-strip-types tests/boundary.test.ts"
+    "build:enclave": "cd enclave-runner && cargo build --release",
+    "test": "node --test --experimental-strip-types tests/boundary.test.ts tests/canonical.test.ts tests/attestation.test.ts",
+    "test:boundary": "node --test --experimental-strip-types tests/boundary.test.ts",
+    "test:canonical": "node --test --experimental-strip-types tests/canonical.test.ts",
+    "test:attestation": "node --test --experimental-strip-types tests/attestation.test.ts",
+    "test:all": "node --test --experimental-strip-types tests/**/*.test.ts",
+    "demo": "node --experimental-strip-types demo/demo.js"
   },
   "keywords": [
     "ai",
     "privacy",
     "semantic",
     "transformation",
-    "local"
+    "local",
+    "tee",
+    "attestation",
+    "sev-snp",
+    "confidential-computing"
   ],
+  "dependencies": {
+    "hex": "^0.2.0"
+  },
   "license": "Apache-2.0",
   "engines": {
     "node": ">=20.0.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "enclave-runner/target/release/*.node"
   ]
 }
 

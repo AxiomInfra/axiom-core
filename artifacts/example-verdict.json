@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "description": "Example verification verdict from Axiom SDK AttestationVerifier",
+    "verified": "2026-01-18T12:00:05.000Z",
+    "version": "1.0"
+  },
+  "verdict": {
+    "valid": true,
+    "platform": "sev-snp",
+    "measurement": "SIMULATED_MEASUREMENT_ABC123456789DEF",
+    "claims": {
+      "codeIdentity": true,
+      "platformAuth": true,
+      "sessionBinding": true,
+      "freshness": true,
+      "reportStructure": true,
+      "configBinding": true
+    },
+    "errors": [],
+    "warnings": [
+      "Simulator report detected - no real platform authentication"
+    ],
+    "verifiedAt": 1737201605000
+  },
+  "verification_details": {
+    "code_identity": {
+      "expected_measurement": "SIMULATED_MEASUREMENT_ABC123456789DEF",
+      "actual_measurement": "SIMULATED_MEASUREMENT_ABC123456789DEF",
+      "match": true
+    },
+    "platform_authentication": {
+      "signature_chain_valid": true,
+      "note": "Simulator mode - signature not cryptographically verified"
+    },
+    "session_binding": {
+      "output_hash_from_evidence": "7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b",
+      "output_hash_computed": "7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b",
+      "match": true
+    },
+    "config_binding": {
+      "config_hash": "a3c4f2d8e9b1234567890abcdef12345678901234567890abcdef123456789012",
+      "validated": true
+    },
+    "freshness": {
+      "evidence_timestamp": 1737201600000,
+      "verification_timestamp": 1737201605000,
+      "age_seconds": 5,
+      "max_age_seconds": 300,
+      "within_limit": true
+    }
+  },
+  "recommendation": "ACCEPT",
+  "security_level": "DEVELOPMENT_SIMULATOR",
+  "notes": [
+    "This verdict is from simulator mode and should not be used in production.",
+    "For production use, configure securityTier='attested' with enclave='required'.",
+    "Real SEV-SNP attestation provides cryptographic hardware-backed guarantees."
+  ]
+}
+

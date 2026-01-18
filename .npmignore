@@ -1,0 +1,17 @@
+src/
+tests/
+docs/
+demo/
+artifacts/
+enclave-runner/
+
+ARCHITECTURE.md
+SECURITY.md
+ROADMAP.md
+STATUS.md
+measurements.json
+tsconfig.json
+
+.gitignore
+.npmignore
+
