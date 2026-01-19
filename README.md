@@ -110,7 +110,7 @@ node --experimental-strip-types demo/demo.js
 The public SDK surface is intentionally minimal.
 
 ```ts
-import { Axiom } from "@axiom/sdk";
+import { Axiom } from "@axiom-infra/sdk";
 
 const axiom = new Axiom({
   securityTier: "standard",
