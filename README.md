@@ -1,6 +1,4 @@
-# Axiom Core
-
-![status](https://img.shields.io/badge/status-0.1.0--alpha.1-blue)
+# Axiom SDK (V0.1)
 
 **Local semantic transformation for private AI reasoning.**
 
