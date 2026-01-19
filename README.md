@@ -1,6 +1,6 @@
 # Axiom Core
 
-![status](https://img.shields.io/badge/status-1.0.0--alpha.1-blue)
+![status](https://img.shields.io/badge/status-0.1.0--alpha.1-blue)
 
 **Local semantic transformation for private AI reasoning.**
 
