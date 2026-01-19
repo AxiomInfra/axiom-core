@@ -254,7 +254,7 @@ This repository represents the open-core component of the Axiom system.
 - Roadmap: [`docs/roadmap.md`](docs/roadmap.md)
 - Status: [`STATUS.md`](STATUS.md)
 - Issues: [github.com/Axiom-Infra/axiom-core/issues](https://github.com/Axiom-Infra/axiom-core/issues)
-- Changelog: [github.com/Axiom-Infra/axiom-core/releases](https://github.com/Axiom-Infra/axiom-core/releases)
+- Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - Contact: hello@axiominfra.cloud | security@axiominfra.cloud
 
 ---
