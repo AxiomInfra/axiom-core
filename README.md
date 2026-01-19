@@ -122,6 +122,50 @@ const result = await axiom.reason({
 });
 ```
 
+### Developer Quickstart (Production Path)
+
+1. Install the SDK:
+
+```bash
+npm install @axiom-infra/core
+```
+
+2. Initialize Axiom with the v0.x standard tier (software-only):
+
+```ts
+import { Axiom } from "@axiom-infra/core";
+
+const axiom = new Axiom({
+  securityTier: "standard",
+  enclave: "none",
+  policyVersion: "v1",
+});
+```
+
+3. Transform local context and send only the transformed output to a cloud model:
+
+```ts
+const result = await axiom.reason({
+  context: localDocuments,
+  task: "summarize obligations",
+  model: "gpt-5",
+});
+
+// Send only result.transformedContext to cloud
+```
+
+4. Optional preview path (attested/enclave). Use only for experimentation:
+
+```ts
+const axiomPreview = new Axiom({
+  securityTier: "attested",
+  enclave: "auto",
+  policyVersion: "v1",
+});
+```
+
+For full integration details, see `docs/INTEGRATION.md`.
+
 ### Guarantees (v0.x)
 
 When invoking `axiom.reason(...)` in the **standard** tier, the SDK provides:
