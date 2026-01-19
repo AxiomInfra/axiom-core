@@ -88,7 +88,7 @@
     "timestamp": 1737201600000
   },
   "rawInput": {
-    "note": "Raw input is shown here for demonstration only. In real hardware runs, raw input is not expected to leave the enclave."
+    "note": "Raw input is shown here for demonstration only. In real hardware runs, raw input is not expected to leave the enclave.",
     "context": "John Doe signed a $50,000 contract with Acme Corp on 2026-01-15",
     "task": "Analyze this business transaction"
   },
