@@ -1,5 +1,5 @@
 /**
- * Configuration for the Axiom SDK.
+ * Configuration for the Axiom Core.
  * All fields are required. No defaults are applied.
  */
 export interface AxiomConfig {

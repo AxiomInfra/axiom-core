@@ -3,7 +3,7 @@ import type { AxiomConfig } from "../core/config.ts";
 import type { SessionMetadata } from "../attestation/types.ts";
 
 /**
- * Session management for Axiom SDK.
+ * Session management for Axiom Core.
  * Tracks execution sessions and binds attestation evidence to specific executions.
  */
 

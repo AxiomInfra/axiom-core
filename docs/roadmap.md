@@ -1,16 +1,14 @@
-# Axiom SDK Roadmap
+# Axiom Core Roadmap
 
 ## Overview
 
-This roadmap outlines the evolution from software-only boundary enforcement (v0) to hardware-backed attestation (v1.0) and future privacy guarantees (v2.0+). It is directional and may change based on hardware availability and integration feedback.
+This roadmap outlines the evolution from software-only boundary enforcement (v0.x) to hardware-backed attestation (v1.x) and future privacy goals (v2.x+). It is directional and may change based on hardware availability and integration feedback.
 
 ---
 
 ## v0.1 (Completed) - Software Boundary MVP
 
 **Status:** Complete  
-**Release:** January 2026
-
 ### Delivered
 - Deterministic entity extraction and role assignment
 - Synthetic ID masking and boundary validation
@@ -20,7 +18,7 @@ This roadmap outlines the evolution from software-only boundary enforcement (v0)
 
 ---
 
-## v1.0 (Current) - TEE Integration & Attestation
+## v1.0 (Next) - TEE Integration & Attestation
 
 **Status:** In progress (TypeScript complete, Rust pending)
 
@@ -48,9 +46,7 @@ This roadmap outlines the evolution from software-only boundary enforcement (v0)
 
 ---
 
-## v1.x (Next) - Hardening & Ecosystem
-
-**Target:** Q2–Q3 2026
+## v1.x (Later) - Hardening & Ecosystem
 
 ### Focus Areas
 - Multi-platform TEE support (Intel TDX, Apple Secure Enclave, Arm CCA)
@@ -61,8 +57,6 @@ This roadmap outlines the evolution from software-only boundary enforcement (v0)
 ---
 
 ## v2.0 (Future) - Zero-Knowledge & Advanced Privacy
-
-**Target:** 2027
 
 ### Research Goals
 - Zero-knowledge proofs for semantic claims
@@ -80,22 +74,8 @@ This roadmap outlines the evolution from software-only boundary enforcement (v0)
 
 ---
 
-## Release Schedule (Tentative)
-
-| Version | Target Date | Status |
-|---|---|---|
-| v0.1.0 | Jan 2026 | Released |
-| v1.0.0-beta | Feb 2026 | In progress |
-| v1.0.0 | Mar 2026 | Planned |
-| v1.1.0 | May 2026 | Planned |
-| v1.2.0 | Jul 2026 | Planned |
-| v2.0.0-alpha | Q4 2026 | Research |
-| v2.0.0 | Q2 2027 | Vision |
-
----
-
 ## Contact
 
-- Issues: https://github.com/axiom-sdk/axiom-sdk/issues
-- Security: security@axiom-sdk.dev
+- Issues: https://github.com/Axiom-Infra/axiom-core/issues
+- Security: security@axiominfra.cloud
 

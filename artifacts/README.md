@@ -1,6 +1,6 @@
-# Axiom SDK Example Artifacts
+# Axiom Core Example Artifacts
 
-This directory contains example outputs from the Axiom SDK v1.0 to demonstrate the attestation and verification workflow.
+This directory contains example outputs from the Axiom Core v0.x to demonstrate the attestation and verification workflow.
 
 ## Files
 
@@ -9,7 +9,7 @@ This directory contains example outputs from the Axiom SDK v1.0 to demonstrate t
 Complete example of a successful transformation with attestation evidence in simulator mode.
 
 **Contains:**
-- Original raw input (for demonstration only - never exposed in production)
+- Original raw input (for demonstration only - avoid exposing in any environment)
 - Transformed context with synthetic entities and relations
 - Attestation evidence structure
 - Verification hint
@@ -49,7 +49,7 @@ Example of a **failed** verification verdict showing multiple security failures.
 
 ```typescript
 import fs from 'fs';
-import { AttestationVerifier } from '@axiom/sdk';
+import { AttestationVerifier } from '@axiom-infra/core';
 
 // Load example evidence
 const exampleData = JSON.parse(
@@ -78,7 +78,7 @@ console.log('Claims:', verdict.claims);
    ```
    "John Doe signed a $50,000 contract..."
    
-   ↓ (Axiom SDK)
+   ↓ (Axiom Core)
    
    ENTITY_0001 (Actor), ENTITY_0002 (Value), ...
    Relation: signed(ENTITY_0001, ENTITY_0003)
@@ -121,12 +121,12 @@ console.log('Claims:', verdict.claims);
 }
 ```
 
-### Production Mode (Real SEV-SNP)
+### Real Hardware Mode (Preview)
 
 **Characteristics:**
 - Real TEE isolation
 - Cryptographic attestation reports
-- Hardware-backed guarantees
+- Hardware-backed isolation (preview)
 - No warnings (if valid)
 
 **Verdict Example:**
@@ -134,15 +134,15 @@ console.log('Claims:', verdict.claims);
 {
   "valid": true,
   "warnings": [],
-  "security_level": "PRODUCTION_TEE"
+  "security_level": "PREVIEW_TEE"
 }
 ```
 
 ## Security Notes
 
-1. **Never Log Raw Input in Production**
+1. **Avoid Logging Raw Input**
    - `example-evidence.json` shows raw input for educational purposes only
-   - In production, raw input never leaves the enclave
+- In real hardware runs, raw input is not expected to leave the enclave
 
 2. **Verify Measurements from Trusted Source**
    - Always fetch `expectedMeasurement` from your secure registry
@@ -249,14 +249,14 @@ npm run demo:attested-simulator
 ```bash
 # Requires SEV-SNP VM
 npm run demo:attested-real
-# Outputs to artifacts/my-production-example.json
+# Outputs to artifacts/my-hardware-example.json
 ```
 
 ## Questions?
 
 - **Documentation:** See `docs/INTEGRATION.md` for integration guide
-- **Issues:** https://github.com/axiom-sdk/issues
-- **Security:** security@axiom-sdk.dev
+- **Issues:** https://github.com/Axiom-Infra/axiom-core/issues
+- **Security:** security@axiominfra.cloud
 
 ---
 

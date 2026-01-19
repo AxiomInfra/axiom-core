@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- * Axiom SDK Demo Script
+ * Axiom Core Demo Script
  * 
  * Demonstrates both standard and attested tiers with attestation verification.
+ * Note: Attested/enclave flow is an experimental preview.
  * Run with: node demo/demo.js
  */
 
@@ -10,7 +11,7 @@ import { Axiom, AttestationVerifier } from "../src/index.ts";
 import { writeFileSync } from "fs";
 
 console.log("╔════════════════════════════════════════════════════════════════╗");
-console.log("║           Axiom SDK v1.0 - Demo Script                        ║");
+console.log("║           Axiom Core v0.x - Demo Script                        ║");
 console.log("╚════════════════════════════════════════════════════════════════╝\n");
 
 // Example sensitive data
@@ -33,7 +34,7 @@ const axiomStandard = new Axiom({
 console.log("Configuration:");
 console.log("  Security Tier: standard");
 console.log("  Enclave: none");
-console.log("  Guarantees: Software boundary enforcement\n");
+console.log("  Properties: Software boundary enforcement\n");
 
 console.log("Input Context:");
 console.log(`  "${exampleContext}"\n`);
@@ -74,7 +75,7 @@ console.log();
 // Demo 2: Attested Tier (TEE + Attestation)
 // ============================================================================
 
-console.log("🔒 Demo 2: Attested Tier (TEE + Attestation)\n");
+console.log("🔒 Demo 2: Attested Tier (TEE + Attestation, Preview)\n");
 console.log("─".repeat(64));
 
 const axiomAttested = new Axiom({
@@ -90,8 +91,8 @@ const axiomAttested = new Axiom({
 console.log("Configuration:");
 console.log("  Security Tier: attested");
 console.log("  Enclave: auto");
-console.log("  Platform: AMD SEV-SNP (simulator mode)");
-console.log("  Guarantees: Hardware isolation + Cryptographic attestation\n");
+console.log("  Platform: AMD SEV-SNP (simulator mode, preview)");
+console.log("  Properties: Preview of hardware isolation + attestation mechanics\n");
 
 console.log("Input Context:");
 console.log(`  "${exampleContext}"\n`);
@@ -167,7 +168,7 @@ try {
     
     const artifact = {
       metadata: {
-        description: "Axiom SDK Demo Output",
+        description: "Axiom Core Demo Output",
         generated: new Date().toISOString(),
         version: "1.0",
         mode: "simulator"
@@ -210,6 +211,6 @@ console.log("  4. Explore examples in artifacts/\n");
 
 console.log("⚠️  Important Notes:\n");
 console.log("  - This demo uses SIMULATOR mode (no real TEE)");
-console.log("  - For production, configure securityTier='attested' with enclave='required'");
-console.log("  - Real SEV-SNP provides hardware-backed guarantees\n");
+console.log("  - For hardware-backed preview, configure securityTier='attested' with enclave='required'");
+console.log("  - Real SEV-SNP provides isolation; validate properties for your environment\n");
 

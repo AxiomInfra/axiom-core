@@ -1,6 +1,6 @@
 /**
- * Attestation types for Axiom SDK v1.0.
- * Defines evidence format and verification verdicts for TEE attestation.
+ * Attestation types for Axiom Core v0.x.
+ * Experimental preview only; attestation is opt-in and not a v0.x guarantee.
  */
 
 /**

@@ -40,7 +40,7 @@ fn extract_entities(raw_context: &[String]) -> Result<Vec<Entity>> {
     let combined = raw_context.join(" ");
 
     // Simple entity extraction (matches TypeScript logic)
-    // In production, this would be more sophisticated
+    // In real hardware builds, this would be more sophisticated
     
     let mut entity_id = 0;
     

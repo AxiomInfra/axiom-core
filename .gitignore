@@ -1,6 +1,23 @@
 node_modules/
 dist/
 coverage/
+.env
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+*.tgz
+.DS_Store
+.vscode/
+.idea/
+
+# Rust
+/target/
+**/*.rs.bk
+enclave-runner/target/
+node_modules/
+dist/
+coverage/
 target/
 enclave-runner/target/
 

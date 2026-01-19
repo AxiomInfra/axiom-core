@@ -1,15 +1,17 @@
-# Axiom SDK v1.0 Architecture
+# Axiom Core v0.x Architecture
+
+**Note:** Enclave/attested sections are experimental preview only. They are opt-in, non-production, and do not provide v0.x guarantees.
 
 ## Overview
 
-Axiom SDK is a local-first, TEE-backed semantic transformation infrastructure. It transforms raw local input into non-identifying semantic representations while enforcing strict boundary controls at both software and hardware levels.
+Axiom Core is a local-first, software-first semantic transformation infrastructure. It transforms raw local input into non-identifying semantic representations while enforcing strict boundary controls in software, with an experimental enclave preview for hardware isolation.
 
 **Core Principles:**
 
 - **Local-First**: No network dependencies in transformation logic
-- **Hardware-Backed Security**: TEE isolation for attested tier
+- **Hardware-Backed Security (preview)**: TEE isolation explored for attested tier
 - **Explicit Boundaries**: Fail-closed, no silent downgrades
-- **Verifiable Execution**: Cryptographic attestation evidence
+- **Attestation-Based Verification (preview)**: Evidence intended for verification
 - **Deterministic**: Canonical serialization for reproducible outputs
 
 ## System Components
@@ -20,7 +22,7 @@ graph TB
         app["Application"]
     end
     
-    subgraph sdk["Axiom SDK (TypeScript)"]
+    subgraph sdk["Axiom Core (TypeScript)"]
         api["Public API (Axiom class)"]
         config["Configuration (AxiomConfig)"]
         canon["Canonical Serialization"]
@@ -279,7 +281,7 @@ createDigest(context: TransformedContext): ContextDigest
 
 **Modes:**
 - **Simulator**: Local execution, generates fake attestation reports (for development)
-- **Native**: IPC/N-API to actual Rust runner (production)
+- **Native**: IPC/N-API to actual Rust runner (preview hardware)
 
 **Interface:**
 ```typescript
@@ -403,7 +405,7 @@ interface VerificationVerdict {
 
 **Adversaries:**
 1. **Network Attacker**: Observes/modifies traffic
-   - Mitigation: No network calls from SDK
+   - Mitigation: No network calls from core
 2. **Cloud Provider**: Honest-but-curious model provider
    - Mitigation: Only transformed context sent, raw stays local
 3. **Host OS Attacker**: Inspects memory, filesystem, logs
@@ -411,12 +413,12 @@ interface VerificationVerdict {
 4. **Malicious Integrator**: Accidentally sends raw data
    - Mitigation: Boundary validation, explicit errors
 
-### Guarantees (v1.0)
+### Properties (v0.x)
 
 **In-Scope:**
 - Raw input never leaves device in SDK-controlled pathways
 - Transformed context generated inside TEE when `enclave: "required"`
-- Attestation cryptographically proves code identity and platform
+- Attestation evidence is intended to support verification of code identity and platform
 - Explicit failure on unsafe conditions (no silent downgrades)
 - Deterministic outputs (same input → same hash)
 
@@ -474,12 +476,12 @@ This ensures:
 
 ## Enclave Runner (Rust)
 
-**Status:** v1.0 includes TypeScript simulator; Rust runner is architecture-complete but not yet built.
+**Status:** v0.x includes TypeScript simulator; Rust runner is architecture-complete but not yet built.
 
 ### Planned Structure
 
 ```
-enclave-runner/
+enclave/runner/
   Cargo.toml                 # Rust project manifest
   src/
     lib.rs                   # N-API entry point
@@ -580,7 +582,7 @@ Users can:
 ### Primary Interface
 
 ```typescript
-import { Axiom } from "@axiom/sdk";
+import { Axiom } from "@axiom-infra/core";
 
 const axiom = new Axiom({
   securityTier: "attested",
@@ -626,7 +628,7 @@ const result = await axiom.reason({
 ### Verification
 
 ```typescript
-import { AttestationVerifier } from "@axiom/sdk";
+import { AttestationVerifier } from "@axiom-infra/core";
 
 const verifier = new AttestationVerifier();
 const verdict = await verifier.verify(
@@ -678,7 +680,7 @@ try {
 
 ## Performance Characteristics
 
-**v1.0 Focus:** Correctness over performance
+**v0.x Focus:** Correctness over performance
 
 ### Benchmarks (Indicative)
 
@@ -767,7 +769,7 @@ try {
 
 ---
 
-**Document Version:** 1.0  
+**Document Version:** 0.x  
 **Last Updated:** 2026-01-18  
-**Status:** Production-Ready (TypeScript), Architecture-Complete (Rust)
+**Status:** Preview-ready (TypeScript), Architecture-Complete (Rust)
 

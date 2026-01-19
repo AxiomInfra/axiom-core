@@ -1,8 +1,10 @@
-# Axiom SDK Integration Guide
+# Axiom Core Integration Guide
 
-**Version:** 1.0  
+**Version:** 0.x  
 **Last Updated:** 2026-01-18  
-**Audience:** Developers integrating Axiom SDK into applications
+**Audience:** Developers integrating Axiom Core into applications
+
+**Note:** Enclave/attested sections are experimental preview only. They are opt-in, non-production, and do not provide v0.x guarantees.
 
 ---
 
@@ -29,7 +31,7 @@
 ### 30-Second Example
 
 ```typescript
-import { Axiom } from "@axiom/sdk";
+import { Axiom } from "@axiom-infra/core";
 
 // Initialize SDK
 const axiom = new Axiom({
@@ -68,20 +70,20 @@ console.log(result.transformedContext);
 ### NPM
 
 ```bash
-npm install @axiom/sdk
+npm install @axiom-infra/core
 ```
 
 ### Yarn
 
 ```bash
-yarn add @axiom/sdk
+yarn add @axiom-infra/core
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/axiom-sdk/axiom-sdk.git
-cd axiom-sdk
+git clone https://github.com/Axiom-Infra/axiom-core.git
+cd axiom-core
 npm install
 npm run build
 ```
@@ -93,8 +95,8 @@ npm run build
 ### 1. Import and Initialize
 
 ```typescript
-import { Axiom } from "@axiom/sdk";
-import type { AxiomConfig, ReasonInput, ReasonResult } from "@axiom/sdk";
+import { Axiom } from "@axiom-infra/core";
+import type { AxiomConfig, ReasonInput, ReasonResult } from "@axiom-infra/core";
 
 const config: AxiomConfig = {
   securityTier: "standard",
@@ -147,7 +149,7 @@ const result = await axiom.reason({
 | Tier | Description | Enclave Required | Attestation | Use Case |
 |---|---|---|---|---|
 | `"standard"` | Software boundary only | No | No | Development, non-sensitive |
-| `"attested"` | Hardware-backed TEE | Yes | Yes | Production, sensitive data |
+| `"attested"` | Hardware-backed TEE (preview) | Yes | Yes | Hardware testing, sensitive data (preview) |
 
 ### Enclave Modes
 
@@ -172,7 +174,7 @@ const config: AxiomConfig = {
 ```
 
 **Verification Modes:**
-- `"strict"`: All claims must pass (production)
+- `"strict"`: All claims must pass (stricter verification; preview)
 - `"permissive"`: Allow warnings (development, simulator)
 
 ---
@@ -186,7 +188,7 @@ const config: AxiomConfig = {
 - Non-sensitive data
 - Environments without TEE hardware
 
-**Guarantees:**
+**Properties:**
 - Software boundary enforcement
 - Raw text detection
 - Deterministic output
@@ -214,11 +216,10 @@ console.log(result.attestationEvidence); // undefined
 ### Attested Tier (Hardware-Backed)
 
 **When to Use:**
-- Production with sensitive data
-- Regulatory compliance scenarios
-- Customer-controlled confidential VMs
+- Hardware-backed testing with sensitive data (preview)
+- Customer-controlled confidential VMs (preview)
 
-**Guarantees:**
+**Properties (preview):**
 - TEE isolation (AMD SEV-SNP)
 - Cryptographic attestation
 - Verifiable execution
@@ -255,7 +256,7 @@ console.log(result.attestationEvidence.outputHash);
 ### Producing Evidence
 
 ```typescript
-import { Axiom } from "@axiom/sdk";
+import { Axiom } from "@axiom-infra/core";
 
 const axiom = new Axiom({
   securityTier: "attested",
@@ -291,8 +292,8 @@ if (result.attestationEvidence) {
 ### Verifying Evidence
 
 ```typescript
-import { AttestationVerifier } from "@axiom/sdk";
-import type { AttestationEvidence, TransformedContext } from "@axiom/sdk";
+import { AttestationVerifier } from "@axiom-infra/core";
+import type { AttestationEvidence, TransformedContext } from "@axiom-infra/core";
 
 // Receiver side (cloud service or customer)
 async function verifyAndProcess(payload: any) {
@@ -306,7 +307,7 @@ async function verifyAndProcess(payload: any) {
     outputHash: payload.evidence.outputHash,
     timestamp: payload.evidence.timestamp,
     report: Uint8Array.from(Buffer.from(payload.evidence.report, 'base64')),
-    version: "1.0"
+    version: "0.x"
   };
   
   const context: TransformedContext = payload.transformedContext;
@@ -366,7 +367,7 @@ const verdict = await verifier.verify(evidence, context, {
 ### Pattern 1: Direct Integration
 
 ```typescript
-import { Axiom } from "@axiom/sdk";
+import { Axiom } from "@axiom-infra/core";
 import { OpenAI } from "openai";
 
 const axiom = new Axiom({
@@ -429,7 +430,7 @@ Analyze these relationships and provide insights.
 ### Pattern 2: Middleware Wrapper
 
 ```typescript
-import { Axiom } from "@axiom/sdk";
+import { Axiom } from "@axiom-infra/core";
 
 class SecureAIClient {
   private axiom: Axiom;
@@ -534,7 +535,7 @@ import {
   TransformationError,
   ConfigurationError,
   SecurityInvariantError
-} from "@axiom/sdk";
+} from "@axiom-infra/core";
 
 try {
   const result = await axiom.reason({ context, task });
@@ -610,7 +611,7 @@ if (!verdict.valid) {
 
 ```typescript
 import { describe, it, expect } from "your-test-framework";
-import { Axiom } from "@axiom/sdk";
+import { Axiom } from "@axiom-infra/core";
 
 describe("Axiom Integration", () => {
   it("should transform context without leaking identifiers", async () => {
@@ -734,7 +735,7 @@ describe("LLM Integration E2E", () => {
 
 **Architecture:**
 ```
-[Client App] → [Axiom SDK] → [Enclave Runner in SEV-SNP VM]
+[Client App] → [Axiom Core] → [Enclave Runner in SEV-SNP VM]
                     ↓
             [Transformed Context + Evidence]
                     ↓
@@ -754,9 +755,9 @@ describe("LLM Integration E2E", () => {
      --security-type ConfidentialVM
    ```
 
-2. **Install Axiom SDK**
+2. **Install Axiom Core**
    ```bash
-   npm install @axiom/sdk
+   npm install @axiom-infra/core
    ```
 
 3. **Configure for Attested Tier**
@@ -790,7 +791,7 @@ describe("LLM Integration E2E", () => {
 
 ```typescript
 // lambda/handler.ts
-import { Axiom } from "@axiom/sdk";
+import { Axiom } from "@axiom-infra/core";
 
 const axiom = new Axiom({
   securityTier: "standard",
@@ -844,7 +845,7 @@ services:
 
 ```typescript
 import express from "express";
-import { Axiom } from "@axiom/sdk";
+import { Axiom } from "@axiom-infra/core";
 
 const app = express();
 app.use(express.json());
@@ -872,7 +873,7 @@ app.listen(3000, () => console.log("Axiom service running on :3000"));
 
 ## Performance Considerations
 
-### Expected Latencies (v1.0)
+### Expected Latencies (v0.x)
 
 | Operation | Latency | Notes |
 |---|---|---|
@@ -997,9 +998,9 @@ TransformationError: Enclave runner not available or configured to 'none'
 **Solutions:**
 
 1. Check enclave runner is installed
-   ```bash
-   ls node_modules/@axiom/sdk/enclave-runner/
-   ```
+  ```bash
+  ls node_modules/@axiom-infra/core/enclave/runner/
+  ```
 
 2. Use simulator mode for development
    ```typescript
@@ -1031,12 +1032,12 @@ TransformationError: Enclave runner not available or configured to 'none'
 
 ```typescript
 // config/axiom.ts
-import type { AxiomConfig } from "@axiom/sdk";
+import type { AxiomConfig } from "@axiom-infra/core";
 
 export function getAxiomConfig(): AxiomConfig {
   const env = process.env.NODE_ENV;
   
-  if (env === "production") {
+  if (env === "attested-preview") {
     return {
       securityTier: "attested",
       enclave: "required",
@@ -1059,7 +1060,7 @@ export function getAxiomConfig(): AxiomConfig {
 ### 2. Error Logging (Safe)
 
 ```typescript
-import { BoundaryViolationError } from "@axiom/sdk";
+import { BoundaryViolationError } from "@axiom-infra/core";
 
 try {
   const result = await axiom.reason({ context, task });
@@ -1141,7 +1142,7 @@ async function getExpectedMeasurement(version: string): Promise<string> {
 }
 
 // Use in verification
-const expectedMeasurement = await getExpectedMeasurement("1.0.0");
+const expectedMeasurement = await getExpectedMeasurement("0.1.0");
 const verdict = await verifier.verify(evidence, context, {
   expectedMeasurement
 });
@@ -1151,14 +1152,14 @@ const verdict = await verifier.verify(evidence, context, {
 
 ## Support & Resources
 
-- **Documentation:** [https://docs.axiom-sdk.dev](https://docs.axiom-sdk.dev)
-- **GitHub:** [https://github.com/axiom-sdk](https://github.com/axiom-sdk)
-- **Issues:** [https://github.com/axiom-sdk/issues](https://github.com/axiom-sdk/issues)
-- **Security:** security@axiom-sdk.dev
-- **Enterprise:** enterprise@axiom-sdk.dev
+- **Documentation:** [https://docs.axiominfra.cloud](https://docs.axiominfra.cloud)
+- **GitHub:** [https://github.com/Axiom-Infra](https://github.com/Axiom-Infra)
+- **Issues:** [https://github.com/Axiom-Infra/axiom-core/issues](https://github.com/Axiom-Infra/axiom-core/issues)
+- **Security:** security@axiominfra.cloud
+- **Enterprise:** enterprise@axiominfra.cloud
 
 ---
 
-**Document Version:** 1.0  
+**Document Version:** 0.x  
 **Last Updated:** 2026-01-18
 

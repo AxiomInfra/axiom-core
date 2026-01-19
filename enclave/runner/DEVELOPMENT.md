@@ -1,13 +1,15 @@
 # Rust Enclave Runner Development Guide
 
+**Status:** Experimental preview. This runner is opt-in, non-production, and does not provide v0.x guarantees.
+
 ## Quick Start
 
 ```bash
 # Install Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Clone and build
-cd enclave-runner
+# Clone and build (from repo root)
+cd enclave/runner
 cargo build
 
 # Run tests
@@ -17,7 +19,7 @@ cargo test
 ## Project Structure
 
 ```
-enclave-runner/
+enclave/runner/
 ├── Cargo.toml              # Dependencies and configuration
 ├── build.rs                # N-API build script
 ├── src/
@@ -74,7 +76,7 @@ cargo test -- --nocapture
 npm run build:enclave
 
 # Verify N-API module
-ls enclave-runner/target/release/*.node
+ls enclave/runner/target/release/*.node
 ```
 
 ## AMD SEV-SNP Integration
@@ -285,11 +287,11 @@ fn test_deterministic(input: Vec<String>) -> bool {
 - [Rust Book](https://doc.rust-lang.org/book/)
 - [N-API Rust](https://napi.rs/)
 - [AMD SEV-SNP](https://www.amd.com/en/developer/sev.html)
-- [Axiom SDK Docs](../docs/)
+- [Axiom Core Docs](../../docs/)
 
 ## Getting Help
 
-- GitHub Issues: https://github.com/axiom-sdk/issues
-- Rust Discord: #axiom-sdk
-- Email: dev@axiom-sdk.dev
+- GitHub Issues: https://github.com/Axiom-Infra/axiom-core/issues
+- Rust Discord: #axiom-core
+- Email: dev@axiominfra.cloud
 

@@ -1,3 +1,7 @@
+/**
+ * Experimental attestation parser. This is an opt-in preview path and does not
+ * provide v0.x guarantees.
+ */
 import type { ParsedAttestationReport } from "./types.ts";
 
 /**

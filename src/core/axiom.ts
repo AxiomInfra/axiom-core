@@ -9,7 +9,7 @@ import { assertNoNetworkAccess } from "../security/guarantees.ts";
 import { Session } from "../runtime/session.ts";
 
 /**
- * Axiom SDK main class.
+ * Axiom Core main class.
  * Provides semantic transformation of raw input into non-identifying representations.
  *
  * This class is the primary public API of the SDK.

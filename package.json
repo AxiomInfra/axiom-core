@@ -1,21 +1,21 @@
 {
-  "name": "@axiom/sdk",
-  "version": "1.0.0-alpha.1",
-  "description": "Local semantic transformation for private AI reasoning with TEE attestation",
-  "author": "Axiom SDK Team <hello@axiom-sdk.dev>",
+  "name": "@axiom-infra/core",
+  "version": "0.1.0",
+  "description": "Local semantic boundary engine for private AI reasoning",
+  "author": "Axiom Core Team <hello@axiominfra.cloud>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/axiom-sdk/axiom-sdk.git"
+    "url": "https://github.com/Axiom-Infra/axiom-core.git"
   },
   "bugs": {
-    "url": "https://github.com/axiom-sdk/axiom-sdk/issues"
+    "url": "https://github.com/Axiom-Infra/axiom-core/issues"
   },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "build:enclave": "cd enclave-runner && cargo build --release",
+    "build:enclave": "cd enclave/runner && cargo build --release",
     "test": "node --test --experimental-strip-types tests/boundary.test.ts tests/canonical.test.ts tests/attestation.test.ts",
     "test:boundary": "node --test --experimental-strip-types tests/boundary.test.ts",
     "test:canonical": "node --test --experimental-strip-types tests/canonical.test.ts",
@@ -24,15 +24,11 @@
     "demo": "node --experimental-strip-types demo/demo.js"
   },
   "keywords": [
-    "ai",
+    "ai-infrastructure",
     "privacy",
-    "semantic",
-    "transformation",
-    "local",
-    "tee",
-    "attestation",
-    "sev-snp",
-    "confidential-computing"
+    "security",
+    "sdk",
+    "open-core"
   ],
   "dependencies": {
     "hex": "^0.2.0"
@@ -43,7 +39,7 @@
   },
   "files": [
     "dist",
-    "enclave-runner/target/release/*.node"
+    "enclave/runner/target/release/*.node"
   ]
 }
 

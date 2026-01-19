@@ -1,11 +1,12 @@
-# Axiom Enclave Runner
+# Axiom Enclave Runner (Experimental Preview)
 
-Native Rust component for Axiom SDK providing TEE isolation and attestation.
+This is an **experimental** native Rust component for Axiom Core. It is opt-in,
+non-production, and does not provide v0.x guarantees.
 
 ## Features
 
 - **Simulator Mode** (default): Development without TEE hardware
-- **SEV-SNP Mode**: Real AMD SEV-SNP support (requires hardware)
+- **SEV-SNP Mode**: Real AMD SEV-SNP support (requires hardware, preview)
 
 ## Building
 
@@ -28,7 +29,7 @@ cargo test
 npm run build:enclave
 ```
 
-### SEV-SNP Mode (Production)
+### SEV-SNP Mode (Preview)
 
 ```bash
 # Requires SEV-SNP hardware and AMD SDK
@@ -41,7 +42,7 @@ cargo run --release --features sev-snp --bin measure
 ## Architecture
 
 ```
-TypeScript (Axiom SDK)
+TypeScript (Axiom Core)
     ↓ N-API
 Rust Runner (this crate)
     ↓ SEV-SNP API
@@ -61,17 +62,17 @@ AMD SEV-SNP TEE
 
 ```typescript
 // TypeScript usage
-import { transform, getMeasurement, checkAvailability } from './enclave-runner';
+import { transform, getMeasurement, checkAvailability } from './runner';
 
 const request = { rawContext, policy, sessionId, nonce };
 const response = await transform(JSON.stringify(request));
 ```
 
-## Security Properties
+## Security Properties (Preview)
 
-- No network access
-- No filesystem writes
-- Memory wiping on completion
+- No network access (intended)
+- No filesystem writes (intended)
+- Memory wiping on completion (best-effort)
 - Explicit error handling
 - Boundary validation
 

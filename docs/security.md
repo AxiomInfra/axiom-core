@@ -1,14 +1,16 @@
-# Axiom SDK Security Model (v1.0)
+# Axiom Core Security Model (v0.x)
 
-**Version:** 1.0.0  
+**Version:** 0.x  
 **Last Updated:** 2026-01-18  
-**Status:** Production
+**Status:** Preview
+
+**Note:** Enclave/attested content in this document is experimental preview only. It is opt-in, non-production, and does not provide v0.x guarantees.
 
 ---
 
 ## Overview
 
-The Axiom SDK v1.0 implements a hardware-enforced semantic boundary using Trusted Execution Environments (TEE) with cryptographic attestation. This document defines the threat model, security guarantees, and limitations of the system.
+The Axiom Core v0.x implements a software-enforced semantic boundary. An experimental enclave preview explores TEE-based isolation and attestation. This document defines the threat model, security properties, and limitations of the system.
 
 ## Threat Model
 
@@ -25,7 +27,7 @@ The following assets are considered sensitive and require protection:
    - Relationships between original names/identifiers and synthetic entity IDs
    - The mapping table that allows "reinflation" of transformed context
 
-3. **Transformation Internals** (optional protection in v1.0)
+3. **Transformation Internals** (optional protection in v0.x)
    - Intermediate representations during semantic analysis
    - Entity extraction patterns and heuristics
 
@@ -35,7 +37,7 @@ The following assets are considered sensitive and require protection:
 
 ### Adversaries
 
-The Axiom SDK is designed to protect against the following threat actors:
+The Axiom Core is designed to protect against the following threat actors:
 
 #### 1. Network Attacker (External)
 
@@ -50,8 +52,8 @@ The Axiom SDK is designed to protect against the following threat actors:
 - Cannot forge valid attestation reports
 
 **Protection Mechanisms:**
-- Raw data never transmitted over network (architectural guarantee)
-- Attestation evidence cryptographically binds output to enclave execution
+- Raw data never transmitted over network (architectural property)
+- Attestation evidence is intended to bind output to enclave execution
 - TLS/mTLS recommended for transformed context transmission (out of SDK scope)
 
 #### 2. Cloud Service / Model Provider (Honest-but-Curious)
@@ -70,7 +72,7 @@ The Axiom SDK is designed to protect against the following threat actors:
 **Protection Mechanisms:**
 - Only transformed, de-identified context reaches cloud services
 - Semantic transformation preserves reasoning structure but removes identity
-- Attestation evidence proves transformation occurred in TEE
+- Attestation evidence is intended to support verification that transformation occurred in TEE
 
 #### 3. Host OS Attacker (Local, Privileged)
 
@@ -112,11 +114,11 @@ The Axiom SDK is designed to protect against the following threat actors:
 
 ---
 
-## Security Guarantees (In-Scope for v1.0)
+## Security Properties (In-Scope for v0.x)
 
 ### 1. Local-Only Raw Data Processing
 
-**Guarantee:** Raw input data never leaves the device or controlled environment through any SDK-controlled code path.
+**Property:** Raw input data does not leave the device or controlled environment through SDK-controlled code paths.
 
 **Enforcement:**
 - No network calls in SDK codebase (verified by `assertNoNetworkAccess()`)
@@ -127,18 +129,18 @@ The Axiom SDK is designed to protect against the following threat actors:
 
 ### 2. TEE-Enforced Transformation
 
-**Guarantee:** When `securityTier: "attested"` and `enclave: "required"`, semantic transformation occurs exclusively inside the AMD SEV-SNP Trusted Execution Environment.
+**Preview Property:** When `securityTier: "attested"` and `enclave: "required"`, semantic transformation is intended to occur inside the AMD SEV-SNP Trusted Execution Environment.
 
 **Enforcement:**
 - SDK routes transformation to native enclave runner
 - Enclave runner validates TEE availability before execution
 - Explicit failure if TEE unavailable
 
-**Verification:** Attestation report proves code ran in TEE
+**Verification (preview):** Attestation report is intended to support verification that code ran in TEE
 
 ### 3. Cryptographic Attestation
 
-**Guarantee:** Attestation evidence proves:
+**Preview Property:** Attestation evidence is intended to support verification of:
 - **Code identity** (measurement of enclave binary)
 - **Platform authenticity** (AMD SEV-SNP signature chain)
 - **Output binding** (session_id, config_hash, output_hash)
@@ -152,7 +154,7 @@ The Axiom SDK is designed to protect against the following threat actors:
 
 ### 4. Explicit Failure on Unsafe Conditions
 
-**Guarantee:** The SDK fails loudly and explicitly when security invariants are violated. No silent downgrades or fallbacks.
+**Property:** The SDK fails loudly and explicitly when security invariants are violated. No silent downgrades or fallbacks.
 
 **Enforcement:**
 - `BoundaryViolationError` thrown if raw data detected in output
@@ -164,7 +166,7 @@ The Axiom SDK is designed to protect against the following threat actors:
 
 ### 5. Deterministic Transformation
 
-**Guarantee:** Identical input produces identical output (for auditing and verification).
+**Property:** Identical input produces identical output (for auditing and verification).
 
 **Enforcement:**
 - Canonical serialization with stable ordering
@@ -175,7 +177,7 @@ The Axiom SDK is designed to protect against the following threat actors:
 
 ### 6. Session Binding
 
-**Guarantee:** Attestation evidence is cryptographically bound to a specific execution session and output, preventing replay attacks.
+**Preview Property:** Attestation evidence is intended to bind a specific execution session and output to help detect replay.
 
 **Enforcement:**
 - Random 128-bit session ID generated per execution
@@ -211,7 +213,7 @@ The Axiom SDK is designed to protect against the following threat actors:
 **Why Out-of-Scope:**
 - Baseline mitigations assumed (OS-level, microcode updates)
 - Advanced side-channel attacks require co-location and sophisticated measurement
-- Performance cost of comprehensive mitigation too high for v1.0
+- Performance cost of comprehensive mitigation too high for v0.x
 
 **Mitigation Guidance:**
 - Keep systems patched (CPU microcode, kernel, hypervisor)
@@ -238,7 +240,7 @@ The Axiom SDK is designed to protect against the following threat actors:
 
 **Why Out-of-Scope:**
 - ZK proofs add significant complexity and performance cost
-- v1.0 focuses on attestation-based verification
+- v0.x focuses on attestation-based verification
 - Planned for v2.0
 
 **Mitigation Guidance:**
@@ -317,7 +319,7 @@ Axiom implements multiple layers of security:
 
 #### `securityTier: "standard"`
 
-**Guarantees:**
+**Properties:**
 - Software boundary enforcement
 - No network calls
 - Explicit failure on violations
@@ -333,15 +335,15 @@ Axiom implements multiple layers of security:
 
 #### `securityTier: "attested"`
 
-**Guarantees:**
-- All `standard` tier guarantees
+**Properties (preview):**
+- All `standard` tier properties
 - TEE hardware isolation
-- Cryptographic attestation evidence
+- Attestation evidence intended for verification
 - Verifiable execution
 
 **Use When:**
 - Handling highly sensitive data
-- Regulatory compliance requires attestation
+- Regulatory compliance may require attestation (outside SDK scope)
 - Zero-trust architecture
 
 **Requirements:**
@@ -361,7 +363,7 @@ Explicitly disables TEE, even if available. Transformation runs in standard proc
 
 Use TEE if available, otherwise fail (when `attested` tier) or continue (when `standard` tier).
 
-**Use:** Production systems with fallback requirements.
+**Use:** Deployments needing fallback behavior (preview).
 
 #### `enclave: "required"`
 
@@ -375,7 +377,7 @@ Fail explicitly if TEE unavailable. No fallback.
 
 ### Deployment Recommendations
 
-1. **Confidential VM Pattern** (Recommended for v1.0)
+1. **Confidential VM Pattern** (Recommended for v0.x)
    - Deploy SDK in AMD SEV-SNP confidential virtual machine
    - Client controls VM, cloud provider cannot access memory
    - Clear attestation story for enterprise compliance
@@ -485,14 +487,14 @@ sequenceDiagram
 
 **For security vulnerabilities or concerns:**
 
-- Email: security@axiom-sdk.dev
+- Email: security@axiominfra.cloud
 - PGP Key: [Available on keybase.io/axiom]
 - Response Time: 24-48 hours for critical issues
 
 **For general security questions:**
 
-- GitHub Discussions: [github.com/axiom-sdk/axiom-sdk/discussions]
-- Documentation: [docs.axiom-sdk.dev/security]
+- GitHub Discussions: [github.com/Axiom-Infra/axiom-core/discussions]
+- Documentation: [docs.axiominfra.cloud/security]
 
 ---
 
@@ -500,7 +502,6 @@ sequenceDiagram
 
 | Version | Date       | Changes |
 |---------|------------|---------|
-| 1.0.0   | 2026-01-18 | Initial v1.0 security model with TEE and attestation |
 | 0.1.0   | 2026-01-18 | v0 MVP with software-only boundary enforcement |
 
 ---

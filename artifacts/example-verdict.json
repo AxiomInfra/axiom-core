@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "description": "Example verification verdict from Axiom SDK AttestationVerifier",
+    "description": "Example verification verdict from Axiom Core AttestationVerifier",
     "verified": "2026-01-18T12:00:05.000Z",
     "version": "1.0"
   },
@@ -52,9 +52,9 @@
   "recommendation": "ACCEPT",
   "security_level": "DEVELOPMENT_SIMULATOR",
   "notes": [
-    "This verdict is from simulator mode and should not be used in production.",
-    "For production use, configure securityTier='attested' with enclave='required'.",
-    "Real SEV-SNP attestation provides cryptographic hardware-backed guarantees."
+    "This verdict is from simulator mode and should not be used for real hardware verification.",
+    "For hardware-backed preview runs, configure securityTier='attested' with enclave='required'.",
+    "Real SEV-SNP attestation provides isolation evidence; validate properties for your environment."
   ]
 }
 

@@ -1,14 +1,16 @@
 # Enclave Interface Specification
 
-**Version:** 1.0.0  
+**Version:** 0.x  
 **Platform:** AMD SEV-SNP  
 **Last Updated:** 2026-01-18
+
+**Status:** Experimental preview. This interface is opt-in, non-production, and does not provide v0.x guarantees.
 
 ---
 
 ## Overview
 
-This document specifies the interface between the Axiom SDK (TypeScript) and the native enclave runner (Rust). The interface is designed to be minimal, deterministic, and security-focused.
+This document specifies the interface between the Axiom Core (TypeScript) and the native enclave runner (Rust). The interface is designed to be minimal, deterministic, and security-focused.
 
 ## Interface Contract
 
@@ -90,7 +92,7 @@ struct RedactionStats {
 
 ---
 
-## Constraints & Guarantees
+## Constraints & Properties
 
 ### Hard Limits
 
@@ -364,12 +366,12 @@ const axiom = new Axiom({
 
 ## Version Compatibility
 
-### v1.0 Interface Stability
+### v0.x Interface Stability
 
-The v1.0 interface is **stable** for:
+The v0.x interface is **stable** for:
 - Input/output structure
 - Error codes
-- Security guarantees
+- Security properties
 
 ### Breaking Changes (Future)
 
@@ -386,7 +388,7 @@ Breaking changes will increment major version.
 
 ### Threat Model
 
-See [SECURITY.md](../SECURITY.md) for full threat model.
+See [security.md](security.md) for full threat model.
 
 **What the enclave protects against:**
 - Host OS inspection of transformation
@@ -403,7 +405,7 @@ See [SECURITY.md](../SECURITY.md) for full threat model.
 1. **Validate measurement** before trusting output
 2. **Check timestamp freshness** (< 5 minutes old)
 3. **Verify signature chain** to AMD root
-4. **Use dedicated hardware** for production
+4. **Use dedicated hardware** for stronger isolation (preview)
 5. **Keep platform updated** (firmware, microcode)
 
 ---
@@ -439,6 +441,6 @@ console.log("Measurement:", response.measurement);
 ---
 
 **Document Status:** Specification  
-**Implementation:** Rust enclave runner (enclave-runner/ directory)  
+**Implementation:** Rust enclave runner (`enclave/runner/` directory)  
 **Review Cycle:** Before any interface changes
 

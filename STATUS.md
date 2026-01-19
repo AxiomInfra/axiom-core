@@ -1,20 +1,20 @@
-# Axiom SDK Status
+# Axiom Core Status
 
-**Status:** TypeScript SDK complete; Rust enclave runner in progress  
+**Status:** TypeScript core complete; Rust enclave runner in progress  
 **Date:** 2026-01-18  
-**Version:** 1.0.0-alpha.1
+**Version:** 0.1.0-alpha.1
 
 ---
 
 ## Summary
 
-The TypeScript SDK is feature-complete with deterministic transformation, boundary enforcement, and attestation verification. The Rust enclave runner exists as a scaffold with simulator support; real SEV-SNP integration remains in progress. Simulator mode enables end-to-end development and testing without hardware.
+The TypeScript core is feature-complete with deterministic transformation, boundary enforcement, and attestation verification. The Rust enclave runner exists as a scaffold with simulator support; real SEV-SNP integration remains in progress. Simulator mode enables end-to-end development and testing without hardware.
 
 ---
 
 ## Current State
 
-### TypeScript SDK
+### TypeScript Core
 - Core transformation pipeline implemented
 - Deterministic canonical serialization and hashing
 - Session binding and attestation evidence types
@@ -23,7 +23,7 @@ The TypeScript SDK is feature-complete with deterministic transformation, bounda
 - Public API exported via `src/index.ts`
 
 ### Rust Enclave Runner
-- Project structure present in `enclave-runner/`
+- Project structure present in `enclave/runner/`
 - Simulator workflow supported for development
 - Real SEV-SNP attestation and N-API hardening in progress
 
@@ -41,9 +41,9 @@ The TypeScript SDK is feature-complete with deterministic transformation, bounda
 
 Core documentation is present and up to date:
 - `README.md` (overview and quick start)
-- `ARCHITECTURE.md` (system design)
-- `SECURITY.md` (threat model and guarantees)
-- `ROADMAP.md` (v1.0 through v2.0)
+- `docs/architecture.md` (system design)
+- `docs/security.md` (threat model and guarantees)
+- `docs/roadmap.md` (v0.x through v2.x)
 - `docs/INTEGRATION.md` (integration guide)
 - `docs/ENCLAVE_INTERFACE.md` (TS ↔ Rust contract)
 
@@ -68,6 +68,6 @@ Core documentation is present and up to date:
 
 ## Contact
 
-- General: hello@axiom-sdk.dev
-- Security: security@axiom-sdk.dev
+- General: hello@axiominfra.cloud
+- Security: security@axiominfra.cloud
 

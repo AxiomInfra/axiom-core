@@ -1,11 +1,11 @@
 [package]
 name = "axiom-enclave-runner"
-version = "1.0.0"
+version = "0.1.0"
 edition = "2021"
-authors = ["Axiom SDK Team"]
-description = "Native enclave runner for Axiom SDK with AMD SEV-SNP support"
+authors = ["Axiom Core Team"]
+description = "Native enclave runner for Axiom Core with AMD SEV-SNP support"
 license = "Apache-2.0"
-repository = "https://github.com/axiom-sdk/axiom-sdk"
+repository = "https://github.com/Axiom-Infra/axiom-core"
 
 [lib]
 crate-type = ["cdylib"]

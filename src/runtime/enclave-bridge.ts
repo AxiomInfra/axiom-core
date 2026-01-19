@@ -1,3 +1,7 @@
+/**
+ * Experimental enclave bridge. This is an opt-in preview path and does not
+ * provide v0.x guarantees. The default v0.x flow remains software-only.
+ */
 import type {
   EnclaveRequest,
   EnclaveResponse,
@@ -49,7 +53,7 @@ class NativeEnclaveRunner implements IEnclaveRunner {
   private loadNativeModule(): void {
     try {
       // Attempt to load native module
-      // In production, this would be: require('../../enclave-runner')
+      // In a real deployment, this would be: require('../../enclave/runner')
       // For now, we gracefully handle absence
       this.nativeModule = null; // Placeholder
     } catch (error) {

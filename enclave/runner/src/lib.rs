@@ -1,12 +1,12 @@
 //! Axiom Enclave Runner
 //!
-//! Native Rust runner for Axiom SDK semantic transformation.
+//! Native Rust runner for Axiom Core semantic transformation.
 //! Provides TEE isolation via AMD SEV-SNP and N-API bindings for TypeScript.
 //!
 //! # Architecture
 //!
 //! ```text
-//! TypeScript (Axiom SDK)
+//! TypeScript (Axiom Core)
 //!     ↓ (N-API)
 //! Rust Runner (this crate)
 //!     ↓ (SEV-SNP API)
