@@ -8,6 +8,118 @@ The SDK performs semantic transformation locally: removing identifying informati
 
 ---
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+- [Guarantees (v0.x)](#guarantees-v0x)
+- [Features](#features)
+- [What This SDK Is](#what-this-sdk-is)
+- [What This SDK Is Not](#what-this-sdk-is-not)
+- [High-Level Architecture](#high-level-architecture)
+- [Security Model (v0.x)](#security-model-v0x)
+- [Experimental: Enclave Execution (Preview)](#experimental-enclave-execution-preview)
+- [Repository Structure](#repository-structure)
+- [Contributing](#contributing)
+- [License](#license)
+- [Links](#links)
+
+---
+
+## Installation
+
+### Requirements
+
+- Node.js >= 20.0.0
+- npm >= 9.0.0 (or Yarn/pnpm)
+
+### Install
+
+```bash
+npm install @axiom-infra/core
+```
+
+```bash
+yarn add @axiom-infra/core
+```
+
+---
+
+## Usage
+
+### Basic Example
+
+```ts
+import { Axiom } from "@axiom-infra/core";
+
+const axiom = new Axiom({
+  securityTier: "standard",
+  enclave: "none",
+  policyVersion: "v1",
+});
+
+const result = await axiom.reason({
+  context: localDocuments,
+  task: "analyze obligations and risks",
+  model: "gpt-5",
+});
+
+// Send only result.transformedContext to cloud
+```
+
+### Local Demo (from this repo)
+
+```bash
+npm install
+npm run demo
+```
+
+If your shell blocks npm scripts, run:
+
+```bash
+node --experimental-strip-types demo/demo.js
+```
+
+### Advanced Usage (Preview)
+
+```ts
+const axiomPreview = new Axiom({
+  securityTier: "attested",
+  enclave: "auto",
+  policyVersion: "v1",
+});
+```
+
+For full integration details, see `docs/INTEGRATION.md`.
+
+---
+
+## Guarantees (v0.x)
+
+When invoking `axiom.reason(...)` in the **standard** tier, the SDK provides:
+
+| Guarantee | Description |
+|-----------|-------------|
+| **No raw data transmission** | Raw input data is not transmitted by the SDK |
+| **Local transformation** | Semantic transformation occurs locally |
+| **Explicit network calls** | No implicit network calls are performed |
+| **Fail-fast boundaries** | Boundary violations fail explicitly |
+| **Local reinflation** | Returned outputs can be reinflated locally by the caller |
+
+These guarantees apply only to SDK-controlled execution paths.
+
+---
+
+## Features
+
+- Local semantic abstraction pipeline
+- Entity and role modeling
+- Deterministic canonicalization and hashing
+- Explicit boundary enforcement and fail-fast errors
+- Zero data retention by default (SDK-controlled paths)
+
+---
+
 ## What This SDK Is
 
 Axiom Core is **infrastructure**, not an application.
@@ -42,26 +154,6 @@ These concerns are intentionally outside the scope of this repository.
 
 ---
 
-## Core Idea: Semantic Transformation
-
-Most privacy approaches treat identity and meaning as inseparable.
-
-Axiom is built on a different assumption:
-
-> Language models reason over structure and relationships—not names.
-
-Instead of encrypting or redacting text, the SDK performs **local semantic transformation**:
-
-1. Input is analyzed on-device
-2. Entities are extracted and assigned roles
-3. Relationships and values are preserved
-4. Identifiers are removed before serialization
-5. Only transformed context is exposed to cloud models
-
-The transformation is intentionally **lossy**, but controlled. Correctness is measured in **reasoning fidelity**, not textual similarity.
-
----
-
 ## High-Level Architecture
 
 The Axiom system enforces a hard trust boundary.
@@ -86,158 +178,6 @@ The Axiom system enforces a hard trust boundary.
 ```
 
 This repository operates entirely on the **local side** of that boundary.
-
----
-
-## Basic Usage
-
-### Quick Start (Local Demo)
-
-```bash
-npm install
-npm run demo
-```
-
-If your shell blocks npm scripts, run:
-
-```bash
-node --experimental-strip-types demo/demo.js
-```
-
-The public SDK surface is intentionally minimal.
-
-```ts
-import { Axiom } from "@axiom-infra/core";
-
-const axiom = new Axiom({
-  securityTier: "standard",
-  enclave: "none",
-  policyVersion: "v1",
-});
-
-const result = await axiom.reason({
-  context: localDocuments,
-  task: "analyze obligations and risks",
-  model: "gpt-5",
-});
-```
-
-### Developer Quickstart (Production Path)
-
-1. Install the SDK:
-
-```bash
-npm install @axiom-infra/core
-```
-
-2. Initialize Axiom with the v0.x standard tier (software-only):
-
-```ts
-import { Axiom } from "@axiom-infra/core";
-
-const axiom = new Axiom({
-  securityTier: "standard",
-  enclave: "none",
-  policyVersion: "v1",
-});
-```
-
-3. Transform local context and send only the transformed output to a cloud model:
-
-```ts
-const result = await axiom.reason({
-  context: localDocuments,
-  task: "summarize obligations",
-  model: "gpt-5",
-});
-
-// Send only result.transformedContext to cloud
-```
-
-4. Optional preview path (attested/enclave). Use only for experimentation:
-
-```ts
-const axiomPreview = new Axiom({
-  securityTier: "attested",
-  enclave: "auto",
-  policyVersion: "v1",
-});
-```
-
-For full integration details, see `docs/INTEGRATION.md`.
-
-### Guarantees (v0.x)
-
-When invoking `axiom.reason(...)` in the **standard** tier, the SDK provides:
-
-| Guarantee | Description |
-|-----------|-------------|
-| **No raw data transmission** | Raw input data is not transmitted by the SDK |
-| **Local transformation** | Semantic transformation occurs locally |
-| **Explicit network calls** | No implicit network calls are performed |
-| **Fail-fast boundaries** | Boundary violations fail explicitly |
-| **Local reinflation** | Returned outputs can be reinflated locally by the caller |
-
-These guarantees apply only to SDK-controlled execution paths.
-
----
-
-## Semantic Pipeline
-
-The Axiom Core applies a deterministic, auditable transformation pipeline:
-
-```
-  ┌──────────────────────┐
-  │      Raw Input       │
-  └──────────┬───────────┘
-             ▼
-  ┌──────────────────────┐
-  │    Normalization     │
-  └──────────┬───────────┘
-             ▼
-  ┌──────────────────────┐
-  │  Entity Extraction   │
-  └──────────┬───────────┘
-             ▼
-  ┌──────────────────────┐
-  │   Role Assignment    │
-  └──────────┬───────────┘
-             ▼
-  ┌──────────────────────┐
-  │  Relationship Graph  │
-  └──────────┬───────────┘
-             ▼
-  ┌──────────────────────┐
-  │  Identifier Removal  │
-  └──────────┬───────────┘
-             ▼
-  ┌──────────────────────┐
-  │ Context Minimization │
-  └──────────┬───────────┘
-             ▼
-  ╔══════════════════════╗
-  ║ Transformed Context  ║
-  ╚══════════════════════╝
-```
-
-Each stage preserves reasoning-relevant structure while removing identifying information.
-
----
-
-## Entities, Roles, and Relations
-
-Internally, the SDK does not operate on free-form text.
-
-All semantic structure is represented using:
-
-| Concept | Purpose |
-|---------|---------|
-| **Entities** | Discrete objects or actors in the context |
-| **Roles** | Semantic function of each entity |
-| **Relations** | Connections between entities |
-| **Values** | Attributes and properties |
-
-This abstraction allows reasoning to survive identity removal while remaining interpretable and auditable. Schemas are explicitly defined and evolve conservatively.
 
 ---
 
@@ -292,29 +232,6 @@ axiom-core/
 
 ---
 
-## Project Status
-
-Axiom Core is under active development.
-
-**Current focus areas:**
-
-- Stable semantic abstractions
-- Deterministic transformation pipelines
-- Correct boundary enforcement
-- Measurable reasoning fidelity
-
-Public APIs may evolve as constraints are better understood.
-
----
-
-## Roadmap
-
-A high-level engineering roadmap is maintained in [`docs/roadmap.md`](docs/roadmap.md).
-
-This roadmap is directional and does not include timelines or commitments.
-
----
-
 ## Contributing
 
 This project maintains high standards for correctness and clarity. Contributions are welcome for improvements to semantic correctness, documentation quality, and developer ergonomics.
@@ -329,13 +246,16 @@ This repository represents the open-core component of the Axiom system.
 
 ---
 
-## Contact
+## Links
 
-| Channel | Address |
-|---------|---------|
-| General | hello@axiominfra.cloud |
-| Security | security@axiominfra.cloud |
-| GitHub | [github.com/Axiom-Infra/axiom-core](https://github.com/Axiom-Infra/axiom-core) |
+- Integration Guide: [`docs/INTEGRATION.md`](docs/INTEGRATION.md)
+- Architecture: [`docs/architecture.md`](docs/architecture.md)
+- Security: [`docs/security.md`](docs/security.md)
+- Roadmap: [`docs/roadmap.md`](docs/roadmap.md)
+- Status: [`STATUS.md`](STATUS.md)
+- Issues: [github.com/Axiom-Infra/axiom-core/issues](https://github.com/Axiom-Infra/axiom-core/issues)
+- Changelog: [github.com/Axiom-Infra/axiom-core/releases](https://github.com/Axiom-Infra/axiom-core/releases)
+- Contact: hello@axiominfra.cloud | security@axiominfra.cloud
 
 ---
 
