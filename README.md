@@ -1,4 +1,4 @@
-# Axiom SDK (V0.1)
+# Axiom Core (V0.1)
 
 **Local semantic transformation for private AI reasoning.**
 
