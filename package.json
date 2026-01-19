@@ -30,8 +30,9 @@
     "sdk",
     "open-core"
   ],
-  "dependencies": {
-    "hex": "^0.2.0"
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.11.0"
   },
   "license": "Apache-2.0",
   "engines": {

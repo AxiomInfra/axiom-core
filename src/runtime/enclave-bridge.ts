@@ -5,7 +5,6 @@
 import type {
   EnclaveRequest,
   EnclaveResponse,
-  EnclaveError,
   AttestationEvidence,
 } from "../attestation/types.ts";
 import type { TransformedContext } from "../core/config.ts";
@@ -73,7 +72,7 @@ class NativeEnclaveRunner implements IEnclaveRunner {
     }
   }
 
-  async execute(request: EnclaveRequest): Promise<EnclaveResponse> {
+  async execute(_request: EnclaveRequest): Promise<EnclaveResponse> {
     if (!this.nativeModule) {
       throw new ConfigurationError(
         "Native enclave runner not available - module not loaded"

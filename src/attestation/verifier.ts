@@ -10,7 +10,6 @@ import type {
 import type { TransformedContext } from "../core/config.ts";
 import {
   parseAttestationReport,
-  extractMeasurement,
   extractReportData,
   isSimulatorReport,
 } from "./parser.ts";
