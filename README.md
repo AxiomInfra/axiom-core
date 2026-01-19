@@ -299,8 +299,8 @@ This repository represents the open-core component of the Axiom system.
 
 | Channel | Address |
 |---------|---------|
-| General | hello@axiom-sdk.dev |
-| Security | security@axiom-sdk.dev |
+| General | hello@axiominfra.cloud |
+| Security | security@axiominfra.cloud |
 | GitHub | [github.com/axiom-sdk/axiom-sdk](https://github.com/axiom-sdk/axiom-sdk) |
 
 ---
