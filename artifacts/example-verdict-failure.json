@@ -1,0 +1,70 @@
+{
+  "metadata": {
+    "description": "Example verification verdict showing attestation failure",
+    "verified": "2026-01-18T12:10:00.000Z",
+    "version": "1.0"
+  },
+  "verdict": {
+    "valid": false,
+    "platform": "sev-snp",
+    "measurement": "WRONG_MEASUREMENT_XYZ987654321",
+    "claims": {
+      "codeIdentity": false,
+      "platformAuth": true,
+      "sessionBinding": false,
+      "freshness": false,
+      "reportStructure": true,
+      "configBinding": true
+    },
+    "errors": [
+      "Measurement mismatch: expected SIMULATED_MEASUREMENT_ABC123456789DEF, got WRONG_MEASUREMENT_XYZ987654321",
+      "Output binding verification failed: Output hash mismatch: evidence claims 9f8e7d6c5b4a3928..., actual is 7a8b9c0d1e2f3a4b...",
+      "Attestation too old: 900s (max: 300s)"
+    ],
+    "warnings": [],
+    "verifiedAt": 1737202200000
+  },
+  "verification_details": {
+    "code_identity": {
+      "expected_measurement": "SIMULATED_MEASUREMENT_ABC123456789DEF",
+      "actual_measurement": "WRONG_MEASUREMENT_XYZ987654321",
+      "match": false,
+      "severity": "CRITICAL"
+    },
+    "platform_authentication": {
+      "signature_chain_valid": true,
+      "note": "Platform auth passed but other claims failed"
+    },
+    "session_binding": {
+      "output_hash_from_evidence": "9f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a39281706f5e4d3c2b1a0",
+      "output_hash_computed": "7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b",
+      "match": false,
+      "severity": "CRITICAL",
+      "possible_cause": "Output was tampered with after transformation"
+    },
+    "freshness": {
+      "evidence_timestamp": 1737201300000,
+      "verification_timestamp": 1737202200000,
+      "age_seconds": 900,
+      "max_age_seconds": 300,
+      "within_limit": false,
+      "severity": "HIGH",
+      "possible_cause": "Replay attack or delayed processing"
+    }
+  },
+  "recommendation": "REJECT",
+  "security_level": "COMPROMISED",
+  "action_required": [
+    "Do not process the transformed context",
+    "Investigate potential tampering or replay attack",
+    "Verify measurement registry is up-to-date",
+    "Check if enclave binary was modified",
+    "Review system logs for anomalies"
+  ],
+  "notes": [
+    "This verdict indicates multiple security failures.",
+    "The output may have been tampered with or the execution environment is compromised.",
+    "Immediate investigation is required before accepting any data from this source."
+  ]
+}
+

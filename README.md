@@ -1,8 +1,8 @@
-# Axiom SDK (V0.0)
+# Axiom SDK (V0.1)
 
 **Local semantic transformation for private AI reasoning.**
 
-The Axiom SDK is the open-core, local execution layer of the Axiom system. It enables cloud-based language models to reason over sensitive, local data—**without the raw data ever leaving the device**.
+The Axiom Core is the open-core, local execution layer of the Axiom system. It enables cloud-based language models to reason over sensitive, local data—**without the raw data ever leaving the device**.
 
 The SDK performs semantic transformation locally: removing identifying information while preserving the relational structure required for reasoning.
 
@@ -10,7 +10,7 @@ The SDK performs semantic transformation locally: removing identifying informati
 
 ## What This SDK Is
 
-The Axiom SDK is **infrastructure**, not an application.
+The Axiom Core is **infrastructure**, not an application.
 
 It is designed to be embedded into systems where:
 
@@ -31,7 +31,7 @@ At a high level, the SDK:
 
 ## What This SDK Is Not
 
-To avoid ambiguity, the Axiom SDK is explicitly **not**:
+To avoid ambiguity, the Axiom Core is explicitly **not**:
 
 - A hosted service or proxy
 - A redaction or PII-masking tool
@@ -94,6 +94,19 @@ This repository operates entirely on the **local side** of that boundary.
 
 ## Basic Usage
 
+### Quick Start (Local Demo)
+
+```bash
+npm install
+npm run demo
+```
+
+If your shell blocks npm scripts, run:
+
+```bash
+node --experimental-strip-types demo/demo.js
+```
+
 The public SDK surface is intentionally minimal.
 
 ```ts
@@ -102,6 +115,7 @@ import { Axiom } from "@axiom/sdk";
 const axiom = new Axiom({
   securityTier: "standard",
   enclave: "auto",
+  policyVersion: "v1",
 });
 
 const result = await axiom.reason({
@@ -129,7 +143,7 @@ The SDK does not silently degrade or bypass these guarantees.
 
 ## Semantic Pipeline
 
-The Axiom SDK applies a deterministic, auditable transformation pipeline:
+The Axiom Core applies a deterministic, auditable transformation pipeline:
 
 ```
   ┌──────────────────────┐
@@ -215,7 +229,7 @@ The SDK is **not** designed to be safe under fully compromised host conditions.
 
 Because semantic transformation is intentionally lossy, fidelity must be measured.
 
-This repository includes a `benchmarks/` directory focused on:
+This repository includes a roadmap for semantic fidelity evaluation focused on:
 
 - Task-level correctness
 - Logical consistency
@@ -230,10 +244,11 @@ Benchmarks are domain-specific, limited in scope, and explicitly non-generalized
 ```
 axiom-sdk/
 ├── src/           # Core SDK implementation
-├── benchmarks/    # Semantic fidelity evaluation
-├── examples/      # Minimal integration examples
+├── demo/          # Demo script
+├── artifacts/     # Example evidence/verdicts
 ├── docs/          # Design notes and specifications
 ├── tests/         # Unit and boundary tests
+├── STATUS.md      # Consolidated project status
 ├── README.md
 ├── ARCHITECTURE.md
 ├── SECURITY.md
@@ -245,7 +260,7 @@ axiom-sdk/
 
 ## Project Status
 
-The Axiom SDK is under active development.
+The Axiom Core is under active development.
 
 **Current focus areas:**
 
@@ -268,22 +283,13 @@ This roadmap is directional and does not include timelines or commitments.
 
 ## Contributing
 
-This project maintains high standards for correctness and clarity.
-
-Contributions are welcome where they improve:
-
-- Semantic correctness
-- Security guarantees
-- Documentation quality
-- Developer ergonomics
-
-Please review [`CONTRIBUTING.md`](CONTRIBUTING.md) before submitting changes.
+This project maintains high standards for correctness and clarity. Contributions are welcome for improvements to semantic correctness, security guarantees, documentation quality, and developer ergonomics.
 
 ---
 
 ## License
 
-The Axiom SDK is released under the **Apache 2.0 License**.
+The Axiom Core is released under the **Apache 2.0 License**.
 
 This repository represents the open-core component of the Axiom system.
 
@@ -293,9 +299,9 @@ This repository represents the open-core component of the Axiom system.
 
 | Channel | Address |
 |---------|---------|
-| General | hello@axiom.ai |
-| Security | security@axiom.ai |
-| GitHub | [github.com/axiom-ai](https://github.com/axiom-ai) |
+| General | hello@axiom-sdk.dev |
+| Security | security@axiom-sdk.dev |
+| GitHub | [github.com/axiom-sdk/axiom-sdk](https://github.com/axiom-sdk/axiom-sdk) |
 
 ---
 

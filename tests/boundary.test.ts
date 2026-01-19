@@ -13,6 +13,7 @@ describe("Boundary Enforcement", () => {
       const axiom = new Axiom({
         securityTier: "standard",
         enclave: "none",
+        policyVersion: "v1",
       });
 
       const rawContext = "John Smith met with Jane Doe on January 15, 2024.";
@@ -46,6 +47,7 @@ describe("Boundary Enforcement", () => {
       const axiom = new Axiom({
         securityTier: "standard",
         enclave: "none",
+        policyVersion: "v1",
       });
 
       const rawContext =
@@ -71,6 +73,7 @@ describe("Boundary Enforcement", () => {
       const axiom = new Axiom({
         securityTier: "standard",
         enclave: "none",
+        policyVersion: "v1",
       });
 
       const rawContext = "Call Alice at 555-123-4567 tomorrow.";
@@ -91,6 +94,7 @@ describe("Boundary Enforcement", () => {
       const axiom = new Axiom({
         securityTier: "standard",
         enclave: "none",
+        policyVersion: "v1",
       });
 
       const result = await axiom.reason({
@@ -99,7 +103,7 @@ describe("Boundary Enforcement", () => {
       });
 
       // All entity IDs should be synthetic
-      for (const entity of result.entities) {
+      for (const entity of result.transformedContext.entities) {
         assert.match(
           entity.syntheticId,
           /^ENTITY_\d{4}$/,
@@ -108,7 +112,7 @@ describe("Boundary Enforcement", () => {
       }
 
       // Relations should use synthetic IDs
-      for (const relation of result.relations) {
+      for (const relation of result.transformedContext.relations) {
         assert.match(
           relation.from,
           /^ENTITY_\d{4}$/,
@@ -196,6 +200,7 @@ describe("Boundary Enforcement", () => {
       const axiom = new Axiom({
         securityTier: "standard",
         enclave: "none",
+        policyVersion: "v1",
       });
 
       // Use same input as other passing tests
@@ -216,6 +221,7 @@ describe("Boundary Enforcement", () => {
       const axiom = new Axiom({
         securityTier: "standard",
         enclave: "none",
+        policyVersion: "v1",
       });
 
       const context =
@@ -232,16 +238,16 @@ describe("Boundary Enforcement", () => {
 
       // Verify entity count is consistent
       assert.strictEqual(
-        result1.entities.length,
-        result2.entities.length,
+        result1.transformedContext.entities.length,
+        result2.transformedContext.entities.length,
         "Entity count should be consistent"
       );
 
       // Verify entity roles are consistent
-      for (let i = 0; i < result1.entities.length; i++) {
+      for (let i = 0; i < result1.transformedContext.entities.length; i++) {
         assert.strictEqual(
-          result1.entities[i].role,
-          result2.entities[i].role,
+          result1.transformedContext.entities[i].role,
+          result2.transformedContext.entities[i].role,
           "Entity roles should be consistent"
         );
       }
@@ -251,6 +257,7 @@ describe("Boundary Enforcement", () => {
       const axiom = new Axiom({
         securityTier: "standard",
         enclave: "none",
+        policyVersion: "v1",
       });
 
       const context = "Henry owns the property valued at $250,000.";
@@ -265,8 +272,8 @@ describe("Boundary Enforcement", () => {
       });
 
       assert.deepStrictEqual(
-        result1.relations,
-        result2.relations,
+        result1.transformedContext.relations,
+        result2.transformedContext.relations,
         "Relations should be identical for same input"
       );
     });
@@ -331,6 +338,7 @@ describe("Boundary Enforcement", () => {
       const axiom = new Axiom({
         securityTier: "standard",
         enclave: "none",
+        policyVersion: "v1",
       });
 
       const result = await axiom.reason({
@@ -344,7 +352,7 @@ describe("Boundary Enforcement", () => {
 
       // Should have entities from all context strings
       assert.ok(
-        result.entities.length > 0,
+        result.transformedContext.entities.length > 0,
         "Should extract entities from multiple contexts"
       );
 

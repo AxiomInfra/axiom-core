@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "description": "Expected measurements for Axiom enclave runner binaries",
+  "measurements": {
+    "axiom-enclave-runner": {
+      "1.0.0": {
+        "platform": "sev-snp",
+        "measurement": "TBD_AFTER_FIRST_BUILD_WITH_REAL_HARDWARE",
+        "buildDate": "2026-01-18",
+        "rustToolchain": "1.75.0",
+        "reproducible": true,
+        "buildCommand": "cd enclave-runner && cargo build --release",
+        "notes": "Initial v1.0 release - measurement will be computed after first reproducible build"
+      },
+      "1.0.0-simulator": {
+        "platform": "sev-snp-simulator",
+        "measurement": "simulator_measurement_0000000000000000000000000000000000000000000000000000000000000000",
+        "buildDate": "2026-01-18",
+        "rustToolchain": "N/A",
+        "reproducible": false,
+        "notes": "Simulator mode for development and testing - NO SECURITY GUARANTEES"
+      }
+    }
+  },
+  "verificationInstructions": {
+    "description": "How to verify measurements",
+    "steps": [
+      "1. Build the enclave runner with: npm run build:enclave",
+      "2. Compute SHA-384 of the binary: sha384sum enclave-runner/target/release/libaxiom_enclave_runner.so",
+      "3. Compare with measurement in this file",
+      "4. For production: Use reproducible build system to verify measurement independently"
+    ]
+  },
+  "reproducibleBuild": {
+    "enabled": true,
+    "dockerImage": "rust:1.75.0",
+    "buildFlags": [
+      "--release",
+      "--locked"
+    ],
+    "environment": {
+      "RUSTFLAGS": "-C debuginfo=0 -C opt-level=3"
+    },
+    "notes": "See .github/workflows/reproducible-build.yml for full reproducible build configuration"
+  },
+  "updatePolicy": {
+    "frequency": "On each release",
+    "process": "Measurements updated via CI/CD after reproducible build verification",
+    "approval": "Security team review required for measurement changes"
+  }
+}
+
