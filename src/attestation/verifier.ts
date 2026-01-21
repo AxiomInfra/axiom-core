@@ -14,6 +14,7 @@ import {
   extractReportData,
   isSimulatorReport,
 } from "./parser.ts";
+import type { ParsedAttestationReport } from "./types.ts";
 import { hash as hashContext } from "../core/canonical.ts";
 import { createHash } from "crypto";
 
@@ -49,6 +50,8 @@ export class AttestationVerifier {
       configBinding: false,
     };
 
+    // 1. Validate report structure
+    let parsedReport: ParsedAttestationReport | null = null;
     // 1. Validate evidence schema
     const evidenceValidation = validateAttestationEvidence(evidence);
     if (!evidenceValidation.valid) {
@@ -57,19 +60,34 @@ export class AttestationVerifier {
 
     // 2. Validate report structure
     try {
-      parseAttestationReport(evidence.report);
+      parsedReport = parseAttestationReport(evidence.report);
       claims.reportStructure = true;
     } catch (error) {
-      errors.push(`Report structure invalid: ${error instanceof Error ? error.message : String(error)}`);
+      errors.push(
+        `Report structure invalid: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
 
+    // 2. Verify measurement (code identity)
+    const reportMeasurement = parsedReport?.measurement;
+    const measurementMatchesReport =
+      !reportMeasurement || reportMeasurement === evidence.measurement;
+    if (!measurementMatchesReport) {
+      errors.push(
+        `Evidence measurement mismatch: report has ${reportMeasurement}, evidence has ${evidence.measurement}`
+      );
+    }
+
+    const measurementToCheck = reportMeasurement ?? evidence.measurement;
     // 3. Verify measurement (code identity)
     if (options.expectedMeasurement) {
-      if (evidence.measurement === options.expectedMeasurement) {
-        claims.codeIdentity = true;
+      if (measurementToCheck === options.expectedMeasurement) {
+        if (measurementMatchesReport) {
+          claims.codeIdentity = true;
+        }
       } else {
         errors.push(
-          `Measurement mismatch: expected ${options.expectedMeasurement}, got ${evidence.measurement}`
+          `Measurement mismatch: expected ${options.expectedMeasurement}, got ${measurementToCheck}`
         );
       }
     } else {
@@ -78,7 +96,7 @@ export class AttestationVerifier {
         errors.push("Expected measurement not provided for verification");
       } else {
         warnings.push("Code identity not verified (no expected measurement)");
-        claims.codeIdentity = true; // Permissive mode
+        claims.codeIdentity = measurementMatchesReport; // Permissive mode still checks report consistency
       }
     }
 
@@ -145,7 +163,7 @@ export class AttestationVerifier {
     return {
       valid,
       platform: evidence.platform,
-      measurement: evidence.measurement,
+      measurement: measurementToCheck,
       claims,
       errors,
       warnings,
