@@ -253,6 +253,7 @@ This repository represents the open-core component of the Axiom system.
 ## Links
 
 - Integration Guide: [`docs/INTEGRATION.md`](docs/INTEGRATION.md)
+- Docs Site: https://github.com/AxiomInfra/axiom-core-docs
 - Architecture: [`docs/architecture.md`](docs/architecture.md)
 - Security: [`docs/security.md`](docs/security.md)
 - Roadmap: [`docs/roadmap.md`](docs/roadmap.md)
