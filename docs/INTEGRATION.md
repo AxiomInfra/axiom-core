@@ -999,7 +999,7 @@ TransformationError: Enclave runner not available or configured to 'none'
 
 1. Check enclave runner is installed
   ```bash
-  ls node_modules/@axiom-infra/core/enclave/runner/
+  ls node_modules/@axiom-infra/enclave-runner/
   ```
 
 2. Use simulator mode for development

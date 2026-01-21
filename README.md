@@ -207,7 +207,7 @@ The SDK is **not** designed to be safe under fully compromised host conditions.
 
 ## Experimental: Enclave Execution (Preview)
 
-A separate enclave runner exists as an **experimental preview** for hardware-backed isolation and attestation. It is **not** part of the v0.x guarantee set and is **not required** to run the core SDK.
+A separate enclave runner exists as an **experimental preview** for hardware-backed isolation and attestation in the private `axiom-enclave-runner` repo. It is **not** part of the v0.x guarantee set and is **not required** to run the core SDK.
 
 If you explore this preview, treat it as opt-in and non-production.
 
