@@ -1,6 +1,6 @@
-# Axiom Core v0.x Architecture
+# Axiom Core v1.0 Architecture
 
-**Note:** Enclave/attested sections are experimental preview only. They are opt-in, non-production, and do not provide v0.x guarantees.
+**Note:** Attested execution is opt-in and requires the native enclave runner. Simulator mode provides no security guarantees.
 
 ## Overview
 
@@ -99,7 +99,7 @@ Canonical Serialization
     ↓
 Output Hash Computation
     ↓
-TransformedContext + Stats
+TransformedContext
 ```
 
 ### Attested Tier (TEE-Backed)
@@ -131,6 +131,7 @@ Session Creation (with nonce)
 │  │   - session_id                   │  │
 │  │   - config_hash                  │  │
 │  │   - output_hash                  │  │
+│  │   - timestamp                    │  │
 │  │    ↓                             │  │
 │  │  AMD Platform Signs Report       │  │
 │  │  (VCEK Signature)                │  │
@@ -211,7 +212,7 @@ async reason(input: ReasonInput): Promise<ReasonResult>
    - Output: `RawEntity[]`
 
 2. **Abstractor** (`abstraction.ts`)
-   - Assigns semantic roles: Actor, Participant, Obligation, Value, Temporal
+   - Assigns semantic roles: Actor, Participant, Value, Temporal (Obligation reserved)
    - Builds explicit relations between entities
    - Output: `SemanticRepresentation { entities, relations }`
 
@@ -259,19 +260,20 @@ createDigest(context: TransformedContext): ContextDigest
 1. Generate random 128-bit `sessionId`
 2. Generate 256-bit `nonce`
 3. Hash configuration → `configHash`
-4. Track timestamp
+4. Track timestamp (`createdAt`)
 5. Create `reportData` for TEE binding:
    ```
-   reportData = SHA-256(sessionId || configHash || nonce || outputHash)
+   reportData = SHA-256(sessionId || configHash || outputHash || timestamp)
    ```
+   Note: `nonce` is generated for forward compatibility and is not currently included in `reportData`.
 
 **Session Object:**
 ```typescript
 {
-  id: string,              // 128-bit hex
+  sessionId: string,       // 128-bit hex
   configHash: string,      // SHA-256 of config
   nonce: string,           // 256-bit hex
-  timestamp: number        // Unix ms
+  createdAt: number        // Unix ms
 }
 ```
 
@@ -283,34 +285,45 @@ createDigest(context: TransformedContext): ContextDigest
 - **Simulator**: Local execution, generates fake attestation reports (for development)
 - **Native**: IPC/N-API to actual Rust runner (preview hardware)
 
+**Native dependency:** Loaded from the optional `@axiom-infra/enclave-runner` package.
+
 **Interface:**
 ```typescript
 class EnclaveBridge {
-  async execute(input: EnclaveInput): Promise<EnclaveOutput>
+  async execute(request: EnclaveRequest): Promise<EnclaveResponse>
 }
 ```
 
-**EnclaveInput:**
+**EnclaveRequest:**
 ```typescript
 {
-  rawContext: string | string[],
-  taskHint: string,
-  policy: AxiomConfig,
-  sessionId: string,
-  nonce: string
+  rawContext: Uint8Array,
+  taskHint?: string,
+  policy: {
+    version: "v1",
+    allowCommonWords: boolean,
+    maxInputSize: number
+  },
+  sessionId: Uint8Array,
+  configHash: string,
+  nonce: Uint8Array,
+  timestamp: number
 }
 ```
 
-**EnclaveOutput:**
+**EnclaveResponse:**
 ```typescript
 {
-  transformedContext: TransformedContext,
-  outputHash: string,
+  transformedContext: Uint8Array,
+  outputHash: Uint8Array,
   attestationReport: Uint8Array,
   redactionStats: {
     entityCount: number,
-    relationCount: number
-  }
+    relationCount: number,
+    identifiersReplaced: number
+  },
+  measurement: string,
+  signature?: Uint8Array
 }
 ```
 
@@ -334,10 +347,10 @@ interface AttestationEvidence {
 
 #### **Parser (`parser.ts`)**
 
-Extracts structured data from raw SEV-SNP report:
-- Measurement (offset 0x170, 48 bytes)
-- ReportData (offset 0x50, 64 bytes)
-- Signature (offset 0x2A0, 512 bytes)
+Extracts structured data from raw SEV-SNP report (current parser offsets):
+- Measurement (offset 0x30, 48 bytes)
+- ReportData (offset 0x280, 64 bytes)
+- Signature (offset 0x2C0, 64 bytes)
 - Certificates (if present)
 
 #### **Verifier (`verifier.ts`)**
@@ -346,7 +359,7 @@ Validates attestation evidence:
 
 **Claims Checked:**
 1. **Code Identity**: `measurement === expectedMeasurement`
-2. **Platform Auth**: VCEK signature chain validates
+2. **Platform Auth**: Report structure + signature presence (full chain validation TBD)
 3. **Session Binding**: `hash(transformedContext) === evidence.outputHash`
 4. **Config Binding**: `evidence.configHash === expectedConfigHash` (if provided)
 5. **Freshness**: `timestamp within maxAge` (default 5 minutes)
@@ -383,11 +396,9 @@ interface VerificationVerdict {
 - Checks that raw input doesn't appear in output
 - Throws `BoundaryViolationError` on violation
 
-**Hardware Layer** (Enclave):
-- TEE isolation prevents raw data egress
-- No filesystem access
-- No network access
-- Memory wiped on completion
+**Hardware Layer** (Enclave, preview):
+- Native runner (private repo) is intended to provide TEE isolation and attestation
+- Simulator provides no security guarantees (development only)
 - Attestation report binds output to execution
 
 **Policy Enforcement** (`src/security/guarantees.ts`):
@@ -400,7 +411,7 @@ interface VerificationVerdict {
 
 **Assets to Protect:**
 - Raw user context (documents, messages, records)
-- Identity mappings (names ↔ entity IDs)
+- Identity mappings (if maintained by integrator; SDK does not expose mapping)
 - Transformation pipeline internals (optional)
 
 **Adversaries:**
@@ -413,11 +424,12 @@ interface VerificationVerdict {
 4. **Malicious Integrator**: Accidentally sends raw data
    - Mitigation: Boundary validation, explicit errors
 
-### Properties (v0.x)
+### Properties (v1.0)
 
 **In-Scope:**
 - Raw input never leaves device in SDK-controlled pathways
-- Transformed context generated inside TEE when `enclave: "required"`
+- Transformed context generated inside native enclave when `securityTier: "attested"` and `enclave: "required"`
+- `enclave: "auto"` may fall back to simulator if native runner is unavailable
 - Attestation evidence is intended to support verification of code identity and platform
 - Explicit failure on unsafe conditions (no silent downgrades)
 - Deterministic outputs (same input → same hash)
@@ -432,12 +444,12 @@ interface VerificationVerdict {
 
 | securityTier | enclave | Behavior |
 |---|---|---|
-| `"standard"` | `"none"` | Local execution, software boundary only |
-| `"standard"` | `"auto"` | Use enclave if available, else local |
-| `"standard"` | `"required"` | Use enclave, fail if unavailable |
+| `"standard"` | `"none"` | Software-only transformation |
+| `"standard"` | `"auto"` | Software-only transformation |
+| `"standard"` | `"required"` | Software-only transformation |
 | `"attested"` | `"none"` | **Invalid** (throws `ConfigurationError`) |
-| `"attested"` | `"auto"` | Use enclave, fail closed if unavailable |
-| `"attested"` | `"required"` | Use enclave, fail if unavailable |
+| `"attested"` | `"auto"` | Native if available, otherwise simulator |
+| `"attested"` | `"required"` | Native only, fail if unavailable |
 
 ## AMD SEV-SNP Integration
 
@@ -448,10 +460,10 @@ AMD SEV-SNP attestation reports are 1184 bytes with the following key fields:
 | Offset | Size | Field | Purpose |
 |---|---|---|---|
 | 0x000 | 4 | Version | Report format version |
-| 0x004 | 4 | Guest Policy | VM policy flags |
-| 0x170 | 48 | Measurement | SHA-384 of initial guest state |
-| 0x050 | 64 | Report Data | Custom data (session binding) |
-| 0x2A0 | 512 | Signature | ECDSA P-384 signature |
+| 0x004 | 8 | Guest Policy | VM policy flags |
+| 0x030 | 48 | Measurement | SHA-384 of initial guest state |
+| 0x280 | 64 | Report Data | Custom data (session binding) |
+| 0x2C0 | 64 | Signature | ECDSA P-384 signature (simplified) |
 
 ### Report Data Binding
 
@@ -466,7 +478,7 @@ This ensures:
 - Configuration cannot be changed (bound to `config_hash`)
 - Session cannot be replayed (bound to unique `session_id` + `timestamp`)
 
-### Signature Chain Validation
+### Signature Chain Validation (Planned)
 
 1. **Extract VCEK** (Versioned Chip Endorsement Key) from report
 2. **Verify Report Signature**: `VCEK.verify(report_data, signature)`
@@ -474,9 +486,11 @@ This ensures:
 4. **Verify ASK Certificate**: Signed by ARK (AMD Root Key)
 5. **Verify ARK**: Known AMD root of trust
 
+**Note:** The current TypeScript verifier validates report structure and signature presence only; full chain validation is not yet implemented.
+
 ## Enclave Runner (Rust)
 
-**Status:** v0.x includes TypeScript simulator; the Rust runner now lives in the private
+**Status:** v1.0 includes TypeScript simulator; the Rust runner now lives in the private
 `axiom-enclave-runner` repository.
 
 ### Planned Structure (private repo)
@@ -521,9 +535,9 @@ pub fn transform(input: Buffer) -> Result<Buffer> {
 ### Requirements
 
 1. **Fixed Toolchain**:
-   - Rust version pinned in `rust-toolchain.toml`
+   - Rust version pinned in `rust-toolchain.toml` (private runner repo)
    - Node.js version documented
-   - TypeScript version pinned in `package.json`
+   - TypeScript tooling provided by the build environment
 
 2. **Deterministic Compilation**:
    - Rust: `RUSTFLAGS="-C link-arg=-Wl,--build-id=none"`
@@ -604,13 +618,15 @@ const result = await axiom.reason({
 // result.transformedContext:
 // {
 //   entities: [
-//     { syntheticId: "ENTITY_0001", role: "Actor", attributes: {...} },
-//     { syntheticId: "ENTITY_0002", role: "Participant", attributes: {...} },
-//     ...
+//     { syntheticId: "ENTITY_0000", role: "Actor", attributes: { type: "name", position: 0 } },
+//     { syntheticId: "ENTITY_0001", role: "Actor", attributes: { type: "name", position: 38 } },
+//     { syntheticId: "ENTITY_0002", role: "Value", attributes: { type: "currency", position: 20, numericValue: 50000 } },
+//     { syntheticId: "ENTITY_0003", role: "Temporal", attributes: { type: "date", position: 62 } }
 //   ],
 //   relations: [
-//     { type: "signed", from: "ENTITY_0001", to: "ENTITY_0003" },
-//     ...
+//     { type: "related", from: "ENTITY_0000", to: "ENTITY_0001" },
+//     { type: "owns", from: "ENTITY_0000", to: "ENTITY_0002" },
+//     { type: "dated", from: "ENTITY_0002", to: "ENTITY_0003" }
 //   ],
 //   task: "Analyze the business transaction"
 // }
@@ -622,6 +638,8 @@ const result = await axiom.reason({
 //   measurement: "abc123...",
 //   sessionId: "def456...",
 //   outputHash: "789xyz...",
+//   configHash: "abc123...",
+//   version: "1.0",
 //   ...
 // }
 ```
@@ -681,7 +699,7 @@ try {
 
 ## Performance Characteristics
 
-**v0.x Focus:** Correctness over performance
+**v1.0 Focus:** Correctness over performance
 
 ### Benchmarks (Indicative)
 
@@ -691,7 +709,7 @@ try {
 | Canonical serialization + hash | ~2ms | SHA-256 |
 | Session creation | <1ms | Random generation |
 | Enclave IPC round-trip | ~50ms | Simulator mode |
-| Attestation verification | ~20ms | Signature chain validation |
+| Attestation verification | ~20ms | Report parsing + binding (signature chain TBD) |
 
 **Bottlenecks:**
 - Enclave IPC (round-trip overhead)
@@ -716,7 +734,7 @@ try {
    - Replay attack prevention
    - Measurement validation
 
-3. **Integration Tests** (`tests/integration/`)
+3. **Integration Tests** (`tests/attested.integration.test.ts`)
    - End-to-end attested flow
    - Enclave availability detection
    - Fail-closed behavior
@@ -770,7 +788,7 @@ try {
 
 ---
 
-**Document Version:** 0.x  
-**Last Updated:** 2026-01-18  
-**Status:** Preview-ready (TypeScript), Architecture-Complete (Rust)
+**Document Version:** 1.0  
+**Last Updated:** 2026-01-21  
+**Status:** v1.0 (TypeScript complete; native runner in private repo)
 

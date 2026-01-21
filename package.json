@@ -1,6 +1,6 @@
 {
   "name": "@axiom-infra/core",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Local semantic boundary engine for private AI reasoning",
   "author": "Axiom Core Team <hello@axiominfra.cloud>",
   "repository": {
@@ -37,7 +37,7 @@
   ],
   "dependencies": {},
   "optionalDependencies": {
-    "@axiom-infra/enclave-runner": "0.1.0"
+    "@axiom-infra/enclave-runner": "1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0"

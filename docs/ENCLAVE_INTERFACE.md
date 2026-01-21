@@ -1,10 +1,10 @@
 # Enclave Interface Specification
 
-**Version:** 0.x  
+**Version:** 1.0  
 **Platform:** AMD SEV-SNP  
-**Last Updated:** 2026-01-18
+**Last Updated:** 2026-01-21
 
-**Status:** Experimental preview. This interface is opt-in, non-production, and does not provide v0.x guarantees.
+**Status:** v1.0 interface for the native runner (simulator available; native runner required for hardware guarantees).
 
 ---
 
@@ -16,77 +16,49 @@ This document specifies the interface between the Axiom Core (TypeScript) and th
 
 ### Input to Enclave
 
-The enclave accepts the following inputs:
+The native runner currently accepts a JSON payload (stringified) with the following structure:
 
-```rust
-struct EnclaveInput {
-    /// Raw context to transform (UTF-8 encoded)
-    /// Max size: 10 MB (10,485,760 bytes)
-    raw_context: Vec<u8>,
-    
-    /// Task hint (optional, should be non-sensitive)
-    /// Max length: 256 bytes
-    task_hint: Option<String>,
-    
-    /// Masking policy parameters
-    policy: MaskingPolicy,
-    
-    /// Session ID for this execution (128-bit random)
-    session_id: [u8; 16],
-    
-    /// Configuration hash (SHA-256)
-    config_hash: [u8; 32],
-    
-    /// Random nonce for freshness (256-bit)
-    nonce: [u8; 32],
-}
-
-struct MaskingPolicy {
-    /// Policy version (must be "v1")
-    version: String,
-    
-    /// Whether to allow common words in output
-    allow_common_words: bool,
-    
-    /// Maximum input size enforcement
-    max_input_size: usize,
+```json
+{
+  "raw_context": ["..."],        // array of UTF-8 strings
+  "task_hint": "optional string",
+  "policy": {
+    "version": "v1",
+    "allow_common_words": true,
+    "max_input_size": 10485760
+  },
+  "session_id": "hex-encoded 16 bytes",
+  "config_hash": "hex-encoded 32 bytes",
+  "nonce": "hex-encoded 32 bytes",
+  "timestamp": 1710000000000
 }
 ```
 
+**Note:** `nonce` is included for forward compatibility; current report binding uses the timestamp instead.
+
 ### Output from Enclave
 
-The enclave produces the following outputs:
+The native runner returns a JSON payload (stringified) with the following structure:
 
-```rust
-struct EnclaveOutput {
-    /// Transformed context (canonical JSON, UTF-8 encoded)
-    transformed_context: Vec<u8>,
-    
-    /// SHA-256 hash of transformed_context
-    output_hash: [u8; 32],
-    
-    /// Raw AMD SEV-SNP attestation report
-    attestation_report: Vec<u8>,
-    
-    /// Redaction statistics (counts only, no content)
-    redaction_stats: RedactionStats,
-    
-    /// Measurement of this enclave binary (SHA-384)
-    measurement: String,
-    
-    /// Optional ECDSA signature over (session_id || config_hash || output_hash)
-    signature: Option<Vec<u8>>,
-}
-
-struct RedactionStats {
-    /// Number of entities extracted
-    entity_count: usize,
-    
-    /// Number of relations built
-    relation_count: usize,
-    
-    /// Number of identifiers replaced with synthetic IDs
-    identifiers_replaced: usize,
+```json
+{
+  "transformed_context": {
+    "entities": [
+      { "id": "ENTITY_0000", "role": "Actor", "attributes": { "type": "name" } }
+    ],
+    "relations": [
+      { "relation_type": "related", "from": "ENTITY_0000", "to": "ENTITY_0001" }
+    ]
+  },
+  "output_hash": "hex-encoded sha256",
+  "attestation_report": [0, 1, 2, ...],
+  "redaction_stats": {
+    "entity_count": 4,
+    "relation_count": 3,
+    "identifiers_replaced": 4
+  },
+  "measurement": "hex-encoded sha384 or simulator marker",
+  "signature": [0, 1, 2, ...]
 }
 ```
 
@@ -94,7 +66,7 @@ struct RedactionStats {
 
 ## Constraints & Properties
 
-### Hard Limits
+### Policy Limits (Native Runner)
 
 | Parameter | Limit | Reason |
 |-----------|-------|--------|
@@ -135,6 +107,8 @@ The enclave **MUST**:
    - Return error on constraint violation
    - No silent truncation or degradation
    - Clear error codes
+
+**Note:** These limits are enforced by the native runner; the TypeScript SDK forwards the policy values.
 
 ### Execution Environment
 
@@ -211,14 +185,14 @@ report_data = SHA-256(
 )
 ```
 
-This 32-byte value is embedded in the `REPORT_DATA` field of the SEV-SNP attestation report.
+This 32-byte value is embedded in the `REPORT_DATA` field of the SEV-SNP attestation report; the verifier compares the first 32 bytes of `report_data` to the expected hash.
 
 ### Verification Flow
 
 ```
 1. Verifier receives (transformed_context, attestation_evidence)
 2. Verifier parses attestation report
-3. Verifier validates AMD signature chain → validates platformAuth
+3. Verifier validates report structure/signature presence → platformAuth (chain validation TBD)
 4. Verifier checks measurement against registry → validates codeIdentity
 5. Verifier recomputes output_hash from transformed_context
 6. Verifier extracts report_data from attestation
@@ -249,7 +223,7 @@ struct EnclaveError {
     code: ErrorCode,
     message: String,
     // No raw input data in details
-    details: Option<HashMap<String, String>>,
+    details: Option<HashMap<String, serde_json::Value>>,
 }
 ```
 
@@ -259,17 +233,17 @@ struct EnclaveError {
 
 ### N-API Binding
 
-The enclave runner exposes a single synchronous function:
+The enclave runner exposes a single function that may be synchronous or async:
 
 ```typescript
 // TypeScript side
-function nativeTransform(request: EnclaveRequest): EnclaveResponse;
+function transform(requestJson: string): Promise<string> | string;
 ```
 
 ```rust
 // Rust side (N-API)
 #[napi]
-fn native_transform(request: Buffer) -> Result<Buffer> {
+fn transform(request: String) -> Result<String> {
     // Deserialize request
     // Call enclave
     // Serialize response
@@ -278,9 +252,9 @@ fn native_transform(request: Buffer) -> Result<Buffer> {
 
 ### Serialization Format
 
-- **Request:** MessagePack or JSON (compact binary preferred)
-- **Response:** MessagePack or JSON
-- **Attestation Report:** Raw bytes (no encoding)
+- **Request:** JSON string (current implementation)
+- **Response:** JSON string (current implementation)
+- **Attestation Report:** Byte array in JSON (`number[]`)
 
 ---
 
@@ -322,7 +296,7 @@ For development and testing, the SDK supports a **simulator mode**:
   - Mock measurement (clearly marked)
   - Mock signature (invalid for real verification)
   - Valid structure for parsing tests
-- Explicitly labeled `"platform": "sev-snp-simulator"`
+- Simulator is detected via report header (`FAKE`) and `simulator_measurement_...`
 
 ### Simulator Usage
 
@@ -366,9 +340,9 @@ const axiom = new Axiom({
 
 ## Version Compatibility
 
-### v0.x Interface Stability
+### v1.0 Interface Stability
 
-The v0.x interface is **stable** for:
+The v1.0 interface is **stable** for:
 - Input/output structure
 - Error codes
 - Security properties
@@ -404,7 +378,7 @@ See [security.md](security.md) for full threat model.
 
 1. **Validate measurement** before trusting output
 2. **Check timestamp freshness** (< 5 minutes old)
-3. **Verify signature chain** to AMD root
+3. **Verify signature chain** to AMD root (planned; not yet implemented)
 4. **Use dedicated hardware** for stronger isolation (preview)
 5. **Keep platform updated** (firmware, microcode)
 
@@ -415,9 +389,10 @@ See [security.md](security.md) for full threat model.
 ### TypeScript Side
 
 ```typescript
-import { EnclaveRunner } from "./runtime/enclave-bridge.ts";
+import { createEnclaveBridge } from "../src/runtime/enclave-bridge.ts";
+import type { EnclaveRequest } from "../src/attestation/types.ts";
 
-const runner = new EnclaveRunner();
+const bridge = await createEnclaveBridge(true, true);
 
 const request: EnclaveRequest = {
   rawContext: new TextEncoder().encode("Sensitive data here"),
@@ -430,9 +405,10 @@ const request: EnclaveRequest = {
   sessionId: crypto.getRandomValues(new Uint8Array(16)),
   configHash: "abc123...",
   nonce: crypto.getRandomValues(new Uint8Array(32)),
+  timestamp: Date.now(),
 };
 
-const response = await runner.execute(request);
+const response = await bridge.execute(request);
 
 console.log("Output hash:", Buffer.from(response.outputHash).toString("hex"));
 console.log("Measurement:", response.measurement);

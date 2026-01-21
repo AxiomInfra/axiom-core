@@ -12,6 +12,21 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [v1.0.0] - 2026-01-21
+
+### Added
+- v1.0 SDK release with optional attested execution path.
+- Enclave bridge with simulator fallback and attestation evidence format v1.0.
+
+### Changed
+- Documentation updated to reflect v1.0 semantics and attested execution.
+- Version bump to 1.0.0.
+
+### Fixed
+- None.
+
+---
+
 ## [v0.1.0] - 2026-01-19
 
 ### Added

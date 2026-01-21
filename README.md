@@ -1,8 +1,8 @@
-# Axiom Core (v0.x)
+# Axiom Core (v1.0)
 
 **Local semantic transformation for private AI reasoning.**
 
-Axiom Core is the v0.x software-only execution layer of the Axiom system. It transforms sensitive local input into non-identifying semantic representations so cloud models can reason over structure without seeing raw data.
+Axiom Core is the v1.0 execution layer of the Axiom system. It transforms sensitive local input into non-identifying semantic representations so cloud models can reason over structure without seeing raw data.
 
 The SDK performs semantic transformation locally: removing identifying information while preserving the relational structure required for reasoning.
 
@@ -12,12 +12,12 @@ The SDK performs semantic transformation locally: removing identifying informati
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Guarantees (v0.x)](#guarantees-v0x)
+- [Guarantees (v1.0)](#guarantees-v10)
 - [Features](#features)
 - [What This SDK Is](#what-this-sdk-is)
 - [What This SDK Is Not](#what-this-sdk-is-not)
 - [High-Level Architecture](#high-level-architecture)
-- [Security Model (v0.x)](#security-model-v0x)
+- [Security Model (v1.0)](#security-model-v10)
 - [Experimental: Enclave Execution (Preview)](#experimental-enclave-execution-preview)
 - [Repository Structure](#repository-structure)
 - [Contributing](#contributing)
@@ -94,7 +94,7 @@ For full integration details, see `docs/INTEGRATION.md`.
 
 ---
 
-## Guarantees (v0.x)
+## Guarantees (v1.0)
 
 When invoking `axiom.reason(...)` in the **standard** tier, the SDK provides:
 
@@ -104,7 +104,7 @@ When invoking `axiom.reason(...)` in the **standard** tier, the SDK provides:
 | **Local transformation** | Semantic transformation occurs locally |
 | **Explicit network calls** | No implicit network calls are performed |
 | **Fail-fast boundaries** | Boundary violations fail explicitly |
-| **Local reinflation** | Returned outputs can be reinflated locally by the caller |
+| **No identity mapping output** | The SDK does not expose a raw↔synthetic mapping |
 
 These guarantees apply only to SDK-controlled execution paths.
 
@@ -117,6 +117,7 @@ These guarantees apply only to SDK-controlled execution paths.
 - Deterministic canonicalization and hashing
 - Explicit boundary enforcement and fail-fast errors
 - Zero data retention by default (SDK-controlled paths)
+- Optional attestation evidence in the attested preview tier
 
 ---
 
@@ -181,7 +182,7 @@ This repository operates entirely on the **local side** of that boundary.
 
 ---
 
-## Security Model (v0.x)
+## Security Model (v1.0)
 
 ### Hard Guarantees
 
@@ -207,9 +208,12 @@ The SDK is **not** designed to be safe under fully compromised host conditions.
 
 ## Experimental: Enclave Execution (Preview)
 
-A separate enclave runner exists as an **experimental preview** for hardware-backed isolation and attestation in the private `axiom-enclave-runner` repo. It is **not** part of the v0.x guarantee set and is **not required** to run the core SDK.
+The attested tier uses an enclave runner (private `@axiom-infra/enclave-runner`). It is **not** part of the core v1.0 guarantee set and is **not required** to run the SDK.
 
-If you explore this preview, treat it as opt-in and non-production.
+Notes:
+- `enclave: "auto"` falls back to a simulator when the native runner is unavailable.
+- `enclave: "required"` fails if the native runner is unavailable.
+- Simulator mode provides **no security guarantees** and is for development only.
 
 ---
 
@@ -217,7 +221,7 @@ If you explore this preview, treat it as opt-in and non-production.
 
 ```
 axiom-core/
-├── src/           # Core SDK implementation (v0.x)
+├── src/           # Core SDK implementation (v1.0)
 ├── demo/          # Demo script
 ├── artifacts/     # Example evidence/verdicts
 ├── docs/          # Design notes and specifications

@@ -1,18 +1,18 @@
 {
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Expected measurements for Axiom enclave runner binaries",
   "measurements": {
     "axiom-enclave-runner": {
-      "0.1.0": {
+      "1.0.0": {
         "platform": "sev-snp",
         "measurement": "TBD_AFTER_FIRST_BUILD_WITH_REAL_HARDWARE",
         "buildDate": "2026-01-18",
         "rustToolchain": "1.75.0",
         "reproducible": true,
         "buildCommand": "cd axiom-enclave-runner && cargo build --release",
-        "notes": "Initial v0.x release - measurement will be computed after first reproducible build"
+        "notes": "Initial v1.0 release - measurement will be computed after first reproducible build"
       },
-      "0.1.0-simulator": {
+      "1.0.0-simulator": {
         "platform": "sev-snp-simulator",
         "measurement": "simulator_measurement_0000000000000000000000000000000000000000000000000000000000000000",
         "buildDate": "2026-01-18",

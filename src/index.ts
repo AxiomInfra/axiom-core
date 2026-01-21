@@ -4,7 +4,7 @@
  * This SDK transforms raw local input into non-identifying semantic
  * representations while enforcing a strict local-to-cloud boundary.
  *
- * v0.x adds TEE-based execution with cryptographic attestation.
+ * v1.0 adds TEE-based execution with cryptographic attestation.
  *
  * @packageDocumentation
  */
