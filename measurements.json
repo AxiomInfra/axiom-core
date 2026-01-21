@@ -9,7 +9,7 @@
         "buildDate": "2026-01-18",
         "rustToolchain": "1.75.0",
         "reproducible": true,
-        "buildCommand": "cd enclave/runner && cargo build --release",
+        "buildCommand": "cd axiom-enclave-runner && cargo build --release",
         "notes": "Initial v0.x release - measurement will be computed after first reproducible build"
       },
       "0.1.0-simulator": {
@@ -25,8 +25,8 @@
   "verificationInstructions": {
     "description": "How to verify measurements",
     "steps": [
-      "1. Build the enclave runner with: npm run build:enclave",
-      "2. Compute SHA-384 of the binary: sha384sum enclave/runner/target/release/libaxiom_enclave_runner.so",
+      "1. Build the enclave runner in the private repo: cargo build --release",
+      "2. Compute SHA-384 of the binary: sha384sum target/release/libaxiom_enclave_runner.so",
       "3. Compare with measurement in this file",
       "4. For stricter verification: Use a reproducible build system to verify measurements independently"
     ]

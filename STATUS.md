@@ -23,7 +23,7 @@ The TypeScript core is feature-complete with deterministic transformation, bound
 - Public API exported via `src/index.ts`
 
 ### Rust Enclave Runner
-- Project structure present in `enclave/runner/`
+- Project structure moved to private `axiom-enclave-runner` repo
 - Simulator workflow supported for development
 - Real SEV-SNP attestation and N-API hardening in progress
 
