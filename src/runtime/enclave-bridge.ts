@@ -299,12 +299,13 @@ export class EnclaveBridge {
  * Tries native first, falls back to simulator if unavailable.
  */
 export async function createEnclaveBridge(
-  preferNative: boolean = true
+  preferNative: boolean = true,
+  allowSimulatorFallback: boolean = true
 ): Promise<EnclaveBridge> {
   const bridge = new EnclaveBridge(preferNative);
 
-  // If native mode requested but not available, log warning and fallback
-  if (preferNative) {
+  // If native mode requested but not available, optionally fallback
+  if (preferNative && allowSimulatorFallback) {
     const available = await bridge.isAvailable();
     if (!available) {
       bridge.useSimulator();
