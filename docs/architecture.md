@@ -476,12 +476,13 @@ This ensures:
 
 ## Enclave Runner (Rust)
 
-**Status:** v0.x includes TypeScript simulator; Rust runner is architecture-complete but not yet built.
+**Status:** v0.x includes TypeScript simulator; the Rust runner now lives in the private
+`axiom-enclave-runner` repository.
 
-### Planned Structure
+### Planned Structure (private repo)
 
 ```
-enclave/runner/
+axiom-enclave-runner/
   Cargo.toml                 # Rust project manifest
   src/
     lib.rs                   # N-API entry point
