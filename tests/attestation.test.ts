@@ -25,16 +25,24 @@ describe("Attestation Binding Tests", () => {
     };
   }
 
-  function buildSimulatorReport(evidence: {
-    sessionId: string;
-    configHash: string;
-    outputHash: string;
-    timestamp: number;
-  }): Uint8Array {
+  function buildSimulatorReport(
+    evidence: {
+      sessionId: string;
+      configHash: string;
+      outputHash: string;
+      timestamp: number;
+    },
+    measurementHex: string = validMeasurement
+  ): Uint8Array {
     const report = new Uint8Array(1184);
     report.set(new TextEncoder().encode("FAKE"), 0);
     const view = new DataView(report.buffer);
     view.setUint32(4, 1, true);
+
+    const measurementBytes = Buffer.from(measurementHex, "hex");
+    if (measurementBytes.length === 48) {
+      report.set(measurementBytes, 48);
+    }
 
     const sessionIdBytes = Buffer.from(evidence.sessionId, "hex");
     const configHashBytes = Buffer.from(evidence.configHash, "hex");
@@ -47,6 +55,41 @@ describe("Attestation Binding Tests", () => {
     bindingHash.update(configHashBytes);
     bindingHash.update(outputHashBytes);
     bindingHash.update(timestampBytes);
+    const expectedHash = bindingHash.digest();
+
+    report.set(expectedHash, 8);
+    return report;
+  }
+
+  function buildSimulatorReportWithNonce(
+    evidence: {
+      sessionId: string;
+      configHash: string;
+      outputHash: string;
+    },
+    nonceHex: string,
+    measurementHex: string = validMeasurement
+  ): Uint8Array {
+    const report = new Uint8Array(1184);
+    report.set(new TextEncoder().encode("FAKE"), 0);
+    const view = new DataView(report.buffer);
+    view.setUint32(4, 1, true);
+
+    const measurementBytes = Buffer.from(measurementHex, "hex");
+    if (measurementBytes.length === 48) {
+      report.set(measurementBytes, 48);
+    }
+
+    const sessionIdBytes = Buffer.from(evidence.sessionId, "hex");
+    const configHashBytes = Buffer.from(evidence.configHash, "hex");
+    const outputHashBytes = Buffer.from(evidence.outputHash, "hex");
+    const nonceBytes = Buffer.from(nonceHex, "hex");
+
+    const bindingHash = createHash("sha256");
+    bindingHash.update(sessionIdBytes);
+    bindingHash.update(configHashBytes);
+    bindingHash.update(outputHashBytes);
+    bindingHash.update(nonceBytes);
     const expectedHash = bindingHash.digest();
 
     report.set(expectedHash, 8);
@@ -280,6 +323,32 @@ describe("Attestation Binding Tests", () => {
         "Code identity check should pass"
       );
     });
+
+    it("should reject evidence when report measurement mismatches evidence", async () => {
+      const context = createMockContext();
+      const evidence = createMockEvidence(context, {
+        measurement: validMeasurement,
+      });
+
+      const wrongMeasurement =
+        "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+      const report = buildSimulatorReport(evidence, wrongMeasurement);
+
+      const verdict = await verifier.verify(
+        { ...evidence, report },
+        context,
+        {
+          expectedMeasurement: validMeasurement,
+          mode: "permissive",
+        }
+      );
+
+      assert.strictEqual(verdict.valid, false, "Should reject mismatched report measurement");
+      assert.ok(
+        verdict.errors?.some((e) => e.includes("Evidence measurement mismatch")),
+        "Should report measurement mismatch between report and evidence"
+      );
+    });
   });
 
   describe("Platform authentication", () => {
@@ -441,6 +510,28 @@ describe("Attestation Binding Tests", () => {
         verdict.claims.sessionBinding,
         false,
         "Output hash should not match different context"
+      );
+    });
+
+    it("should reject report_data bound with nonce instead of timestamp", async () => {
+      const context = createMockContext();
+      const evidence = createMockEvidence(context);
+      const nonceHex = randomBytes(32).toString("hex");
+      const report = buildSimulatorReportWithNonce(evidence, nonceHex);
+
+      const verdict = await verifier.verify(
+        { ...evidence, report },
+        context,
+        {
+          expectedMeasurement: validMeasurement,
+          mode: "permissive",
+        }
+      );
+
+      assert.strictEqual(
+        verdict.claims.sessionBinding,
+        false,
+        "Session binding should fail with nonce-bound report_data"
       );
     });
   });
