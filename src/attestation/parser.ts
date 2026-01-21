@@ -46,8 +46,14 @@ function parseSimulatorReport(report: Uint8Array): ParsedAttestationReport {
   // Extract report_data (offset 8, 32 bytes)
   const reportData = report.slice(8, 40);
 
-  // Simulator measurement (deterministic fake)
-  const measurement = SIMULATOR_MEASUREMENT;
+  // Simulator measurement (deterministic fake or embedded at standard offset)
+  const measurementBytes = report.slice(48, 96);
+  const allZero = measurementBytes.every((byte) => byte === 0);
+  const measurement = allZero
+    ? SIMULATOR_MEASUREMENT
+    : Array.from(measurementBytes)
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
 
   return {
     version,
