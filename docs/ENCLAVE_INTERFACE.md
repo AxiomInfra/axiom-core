@@ -441,6 +441,6 @@ console.log("Measurement:", response.measurement);
 ---
 
 **Document Status:** Specification  
-**Implementation:** Rust enclave runner (`enclave/runner/` directory)  
+**Implementation:** Rust enclave runner (private `axiom-enclave-runner` repo)  
 **Review Cycle:** Before any interface changes
 

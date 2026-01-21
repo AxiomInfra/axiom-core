@@ -16,6 +16,7 @@
   "scripts": {
     "build": "tsc",
     "build:enclave": "cd enclave/runner && cargo build --release",
+    "test": "node --test --experimental-strip-types tests/boundary.test.ts tests/canonical.test.ts tests/attestation.test.ts tests/attested.integration.test.ts",
     "test": "node --test --experimental-strip-types tests/boundary.test.ts tests/canonical.test.ts tests/attestation.test.ts",
     "test:boundary": "node --test --experimental-strip-types tests/boundary.test.ts",
     "test:canonical": "node --test --experimental-strip-types tests/canonical.test.ts",
@@ -35,6 +36,9 @@
     "open-core"
   ],
   "dependencies": {},
+  "optionalDependencies": {
+    "@axiom-infra/enclave-runner": "0.1.0"
+  },
   "devDependencies": {
     "@types/node": "^20.11.0"
   },
@@ -43,7 +47,6 @@
     "node": ">=20.0.0"
   },
   "files": [
-    "dist",
-    "enclave/runner/target/release/*.node"
+    "dist"
   ]
 }

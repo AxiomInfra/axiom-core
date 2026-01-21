@@ -60,6 +60,66 @@ export interface AttestationEvidence {
   version: "1.0";
 }
 
+export interface EvidenceValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+
+function isHexString(value: string, expectedLength: number): boolean {
+  if (value.length !== expectedLength) return false;
+  return /^[0-9a-fA-F]+$/.test(value);
+}
+
+function isSimulatorMeasurement(value: string): boolean {
+  return value.startsWith("simulator_measurement_");
+}
+
+export function validateAttestationEvidence(
+  evidence: AttestationEvidence
+): EvidenceValidationResult {
+  const errors: string[] = [];
+
+  if (evidence.version !== "1.0") {
+    errors.push(`Unsupported attestation version: ${evidence.version}`);
+  }
+
+  if (evidence.platform !== "sev-snp") {
+    errors.push(`Unsupported attestation platform: ${evidence.platform}`);
+  }
+
+  if (!(evidence.report instanceof Uint8Array) || evidence.report.length < 1184) {
+    errors.push("Attestation report must be at least 1184 bytes");
+  }
+
+  if (!isHexString(evidence.sessionId, 32)) {
+    errors.push("Session ID must be a 16-byte hex string");
+  }
+
+  if (!isHexString(evidence.configHash, 64)) {
+    errors.push("Config hash must be a 32-byte hex string");
+  }
+
+  if (!isHexString(evidence.outputHash, 64)) {
+    errors.push("Output hash must be a 32-byte hex string");
+  }
+
+  const measurementOk =
+    isHexString(evidence.measurement, 96) || isSimulatorMeasurement(evidence.measurement);
+  if (!measurementOk) {
+    errors.push("Measurement must be a 48-byte hex string or simulator marker");
+  }
+
+  if (!Number.isFinite(evidence.timestamp) || evidence.timestamp <= 0) {
+    errors.push("Timestamp must be a positive number (milliseconds since epoch)");
+  }
+
+  if (evidence.signature && !(evidence.signature instanceof Uint8Array)) {
+    errors.push("Signature must be a Uint8Array if provided");
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
 /**
  * Verification verdict from attestation validation.
  * Indicates whether the attestation evidence is valid and trusted.

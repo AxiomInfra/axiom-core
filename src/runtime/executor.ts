@@ -114,6 +114,9 @@ export class Executor {
       const transformedContext = this.execute(context, task, model);
       return { transformedContext };
     }
+    if (this.config.enclave === "required" && this.enclaveBridge.getMode() !== "native") {
+      throw new ConfigurationError("Enclave execution required but native mode unavailable");
+    }
 
     // Prepare enclave request
     const rawInputs = Array.isArray(context) ? context : [context];
@@ -180,7 +183,8 @@ export class Executor {
    */
   private async initializeEnclaveBridge(): Promise<EnclaveBridge> {
     const preferNative = this.config.enclave !== "none";
-    return await createEnclaveBridge(preferNative);
+    const allowSimulatorFallback = this.config.enclave === "auto";
+    return await createEnclaveBridge(preferNative, allowSimulatorFallback);
   }
 }
 
