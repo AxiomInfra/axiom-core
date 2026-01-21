@@ -1,5 +1,7 @@
 # Axiom Core v1.0 Architecture
 
+> Canonical docs site: https://github.com/AxiomInfra/axiom-core-docs
+
 **Note:** Attested execution is opt-in and requires the native enclave runner. Simulator mode provides no security guarantees.
 
 ## Overview

@@ -1,5 +1,7 @@
 # Enclave Interface Specification
 
+> Canonical docs site: https://github.com/AxiomInfra/axiom-core-docs
+
 **Version:** 1.0  
 **Platform:** AMD SEV-SNP  
 **Last Updated:** 2026-01-21

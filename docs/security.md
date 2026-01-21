@@ -1,5 +1,7 @@
 # Axiom Core Security Model (v1.0)
 
+> Canonical docs site: https://github.com/AxiomInfra/axiom-core-docs
+
 **Version:** 1.0  
 **Last Updated:** 2026-01-21  
 **Status:** v1.0 (attested tier requires native runner)

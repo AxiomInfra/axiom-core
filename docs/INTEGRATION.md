@@ -1,5 +1,7 @@
 # Axiom Core Integration Guide
 
+> Canonical docs site: https://github.com/AxiomInfra/axiom-core-docs
+
 **Version:** 1.0  
 **Last Updated:** 2026-01-21  
 **Audience:** Developers integrating Axiom Core into applications

@@ -1,5 +1,7 @@
 # Axiom Core Roadmap
 
+> Canonical docs site: https://github.com/AxiomInfra/axiom-core-docs
+
 ## Overview
 
 This roadmap outlines the evolution from software-only boundary enforcement (v0.x) to hardware-backed attestation (v1.0) and future privacy goals (v2.x+). It is directional and may change based on hardware availability and integration feedback.
