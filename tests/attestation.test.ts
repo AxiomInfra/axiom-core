@@ -7,7 +7,8 @@ import { hash } from "../src/core/canonical.ts";
 import { createHash, randomBytes } from "crypto";
 
 describe("Attestation Binding Tests", () => {
-  const validMeasurement = "SIMULATED_MEASUREMENT_ABC123";
+  const validMeasurement =
+    "simulator_measurement_0000000000000000000000000000000000000000000000000000000000000000";
   const verifier = new AttestationVerifier();
 
   function createMockContext(): TransformedContext {
@@ -257,7 +258,9 @@ describe("Attestation Binding Tests", () => {
         "Code identity check should fail"
       );
       assert.ok(
-        verdict.errors?.some((e) => e.includes("Measurement mismatch")),
+        verdict.errors?.some(
+          (e) => e.includes("Evidence measurement mismatch") || e.includes("Measurement mismatch")
+        ),
         "Should report measurement mismatch"
       );
     });
@@ -312,6 +315,43 @@ describe("Attestation Binding Tests", () => {
         verdict.claims.reportStructure,
         false,
         "Report structure check should fail"
+      );
+    });
+  });
+
+  describe("Evidence schema validation", () => {
+    it("should reject unsupported evidence version", async () => {
+      const context = createMockContext();
+      const evidence = {
+        ...createMockEvidence(context),
+        version: "0.9",
+      } as AttestationEvidence;
+
+      const verdict = await verifier.verify(evidence, context, {
+        expectedMeasurement: validMeasurement,
+      });
+
+      assert.strictEqual(verdict.valid, false);
+      assert.ok(
+        verdict.errors?.some((e) => e.includes("Unsupported attestation version")),
+        "Should report version error"
+      );
+    });
+
+    it("should reject malformed session ID", async () => {
+      const context = createMockContext();
+      const evidence = createMockEvidence(context, {
+        sessionId: "not-hex-session-id",
+      });
+
+      const verdict = await verifier.verify(evidence, context, {
+        expectedMeasurement: validMeasurement,
+      });
+
+      assert.strictEqual(verdict.valid, false);
+      assert.ok(
+        verdict.errors?.some((e) => e.includes("Session ID")),
+        "Should report session ID error"
       );
     });
   });

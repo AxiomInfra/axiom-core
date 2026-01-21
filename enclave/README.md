@@ -12,5 +12,6 @@ Scope notes:
 
 Contents:
 
-- `runner/` — native Rust runner preview for enclave execution and attestation.
+- The native Rust runner now lives in the private `axiom-enclave-runner` repository.
+  This public repo only includes simulator and attestation interface definitions.
 
