@@ -9,8 +9,17 @@ import type {
 } from "../attestation/types.ts";
 import type { TransformedContext } from "../core/config.ts";
 import { ConfigurationError } from "../core/errors.ts";
-import { hash as hashContext } from "../core/canonical.ts";
+import { canonicalize, hash as hashContext } from "../core/canonical.ts";
 import { createHash } from "crypto";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
+type NativeRunnerModule = {
+  initialize?: () => string;
+  transform: (requestJson: string) => Promise<string> | string;
+  get_measurement?: () => string;
+  check_availability?: () => boolean;
+};
 
 /**
  * Enclave bridge for communication with native Rust runner.
@@ -43,7 +52,7 @@ export interface IEnclaveRunner {
  * Requires native module to be built and available.
  */
 class NativeEnclaveRunner implements IEnclaveRunner {
-  private nativeModule: unknown | null = null;
+  private nativeModule: NativeRunnerModule | null = null;
 
   constructor() {
     this.loadNativeModule();
@@ -51,10 +60,8 @@ class NativeEnclaveRunner implements IEnclaveRunner {
 
   private loadNativeModule(): void {
     try {
-      // Attempt to load native module
-      // In a real deployment, this would be: require('../../enclave/runner')
-      // For now, we gracefully handle absence
-      this.nativeModule = null; // Placeholder
+      // Attempt to load native module from the private package
+      this.nativeModule = require("@axiom-infra/enclave-runner") as NativeRunnerModule;
     } catch (error) {
       this.nativeModule = null;
     }
@@ -64,32 +71,120 @@ class NativeEnclaveRunner implements IEnclaveRunner {
     if (!this.nativeModule) return false;
 
     try {
-      // Check if SEV-SNP is available on this system
-      // In real implementation: call native function
-      return false; // Requires actual hardware
+      if (this.nativeModule.check_availability) {
+        return this.nativeModule.check_availability();
+      }
+      return false;
     } catch {
       return false;
     }
   }
 
-  async execute(_request: EnclaveRequest): Promise<EnclaveResponse> {
+  async execute(request: EnclaveRequest): Promise<EnclaveResponse> {
     if (!this.nativeModule) {
       throw new ConfigurationError(
         "Native enclave runner not available - module not loaded"
       );
     }
 
-    // In real implementation:
-    // const result = await this.nativeModule.transform(serializeRequest(request));
-    // return deserializeResponse(result);
-
-    throw new ConfigurationError(
-      "Native enclave runner not implemented - use simulator for development"
-    );
+    const requestJson = this.serializeRequest(request);
+    const responseJson = await this.nativeModule.transform(requestJson);
+    return this.deserializeResponse(responseJson, request);
   }
 
   getPlatform(): "sev-snp" {
     return "sev-snp";
+  }
+
+  private serializeRequest(request: EnclaveRequest): string {
+    const rawContext = new TextDecoder().decode(request.rawContext);
+    const payload = {
+      raw_context: [rawContext],
+      task_hint: request.taskHint ?? null,
+      policy: {
+        version: request.policy.version,
+        allow_common_words: request.policy.allowCommonWords,
+        max_input_size: request.policy.maxInputSize,
+      },
+      session_id: Buffer.from(request.sessionId).toString("hex"),
+      config_hash: request.configHash,
+      nonce: Buffer.from(request.nonce).toString("hex"),
+      timestamp: request.timestamp,
+    };
+
+    return JSON.stringify(payload);
+  }
+
+  private deserializeResponse(
+    responseJson: string,
+    request: EnclaveRequest
+  ): EnclaveResponse {
+    const response = JSON.parse(responseJson) as {
+      transformed_context: {
+        entities: Array<{
+          id: string;
+          role: string;
+          attributes: Record<string, unknown>;
+        }>;
+        relations: Array<{
+          relation_type: string;
+          from: string;
+          to: string;
+        }>;
+      };
+      output_hash: string;
+      attestation_report: number[];
+      redaction_stats: {
+        entity_count: number;
+        relation_count: number;
+        identifiers_replaced: number;
+      };
+      measurement: string;
+      signature?: number[];
+    };
+
+    const transformedContext: TransformedContext = {
+      entities: response.transformed_context.entities.map((entity) => {
+        const attributes: Record<string, string | number> = {};
+        for (const [key, value] of Object.entries(entity.attributes ?? {})) {
+          if (typeof value === "string" || typeof value === "number") {
+            attributes[key] = value;
+          } else {
+            attributes[key] = JSON.stringify(value);
+          }
+        }
+        return {
+          syntheticId: entity.id,
+          role: entity.role,
+          attributes,
+        };
+      }),
+      relations: response.transformed_context.relations.map((relation) => ({
+        type: relation.relation_type,
+        from: relation.from,
+        to: relation.to,
+      })),
+      task: request.taskHint ?? "transform",
+      model: undefined,
+    };
+
+    const canonicalJson = canonicalize(transformedContext);
+    const transformedBytes = new TextEncoder().encode(canonicalJson);
+
+    return {
+      transformedContext: transformedBytes,
+      outputHash: Buffer.from(response.output_hash, "hex"),
+      attestationReport: Uint8Array.from(response.attestation_report),
+      redactionStats: {
+        entityCount: response.redaction_stats.entity_count,
+        relationCount: response.redaction_stats.relation_count,
+        identifiersReplaced: response.redaction_stats.identifiers_replaced,
+      },
+      measurement: response.measurement,
+      signature: response.signature
+        ? Uint8Array.from(response.signature)
+        : undefined,
+    };
   }
 }
 
@@ -299,12 +394,13 @@ export class EnclaveBridge {
  * Tries native first, falls back to simulator if unavailable.
  */
 export async function createEnclaveBridge(
-  preferNative: boolean = true
+  preferNative: boolean = true,
+  allowSimulatorFallback: boolean = true
 ): Promise<EnclaveBridge> {
   const bridge = new EnclaveBridge(preferNative);
 
-  // If native mode requested but not available, log warning and fallback
-  if (preferNative) {
+  // If native mode requested but not available, optionally fallback
+  if (preferNative && allowSimulatorFallback) {
     const available = await bridge.isAvailable();
     if (!available) {
       bridge.useSimulator();

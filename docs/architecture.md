@@ -458,13 +458,13 @@ AMD SEV-SNP attestation reports are 1184 bytes with the following key fields:
 The 64-byte `report_data` field is used to bind the attestation to the specific execution:
 
 ```
-report_data = SHA-256(session_id || config_hash || nonce || output_hash)
+report_data = SHA-256(session_id || config_hash || output_hash || timestamp)
 ```
 
 This ensures:
 - Output cannot be swapped (bound to `output_hash`)
 - Configuration cannot be changed (bound to `config_hash`)
-- Session cannot be replayed (bound to unique `session_id` + `nonce`)
+- Session cannot be replayed (bound to unique `session_id` + `timestamp`)
 
 ### Signature Chain Validation
 
@@ -476,12 +476,13 @@ This ensures:
 
 ## Enclave Runner (Rust)
 
-**Status:** v0.x includes TypeScript simulator; Rust runner is architecture-complete but not yet built.
+**Status:** v0.x includes TypeScript simulator; the Rust runner now lives in the private
+`axiom-enclave-runner` repository.
 
-### Planned Structure
+### Planned Structure (private repo)
 
 ```
-enclave/runner/
+axiom-enclave-runner/
   Cargo.toml                 # Rust project manifest
   src/
     lib.rs                   # N-API entry point

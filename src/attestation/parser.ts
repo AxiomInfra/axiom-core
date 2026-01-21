@@ -4,6 +4,9 @@
  */
 import type { ParsedAttestationReport } from "./types.ts";
 
+const SIMULATOR_MEASUREMENT =
+  "simulator_measurement_0000000000000000000000000000000000000000000000000000000000000000";
+
 /**
  * Attestation report parser for AMD SEV-SNP reports.
  * Extracts measurement, custom data, and signature information.
@@ -44,7 +47,7 @@ function parseSimulatorReport(report: Uint8Array): ParsedAttestationReport {
   const reportData = report.slice(8, 40);
 
   // Simulator measurement (deterministic fake)
-  const measurement = "simulator_measurement_" + "0".repeat(42);
+  const measurement = SIMULATOR_MEASUREMENT;
 
   return {
     version,
