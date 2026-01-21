@@ -170,5 +170,10 @@ export interface AttestationEvidence {
    * Optional enclave signature over session data.
    */
   signature?: Uint8Array;
+
+  /**
+   * Version of the attestation format.
+   */
+  version: "1.0";
 }
 
