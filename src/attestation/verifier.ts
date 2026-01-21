@@ -7,6 +7,7 @@ import type {
   VerificationVerdict,
   VerificationOptions,
 } from "./types.ts";
+import { validateAttestationEvidence } from "./types.ts";
 import type { TransformedContext } from "../core/config.ts";
 import {
   parseAttestationReport,
@@ -48,7 +49,13 @@ export class AttestationVerifier {
       configBinding: false,
     };
 
-    // 1. Validate report structure
+    // 1. Validate evidence schema
+    const evidenceValidation = validateAttestationEvidence(evidence);
+    if (!evidenceValidation.valid) {
+      errors.push(...evidenceValidation.errors);
+    }
+
+    // 2. Validate report structure
     try {
       parseAttestationReport(evidence.report);
       claims.reportStructure = true;
@@ -56,7 +63,7 @@ export class AttestationVerifier {
       errors.push(`Report structure invalid: ${error instanceof Error ? error.message : String(error)}`);
     }
 
-    // 2. Verify measurement (code identity)
+    // 3. Verify measurement (code identity)
     if (options.expectedMeasurement) {
       if (evidence.measurement === options.expectedMeasurement) {
         claims.codeIdentity = true;
@@ -75,7 +82,7 @@ export class AttestationVerifier {
       }
     }
 
-    // 3. Verify platform authentication (signature chain)
+    // 4. Verify platform authentication (signature chain)
     if (options.validateSignatureChain !== false) {
       const platformAuthResult = await this.verifyPlatformSignature(evidence.report);
       claims.platformAuth = platformAuthResult.valid;
@@ -93,14 +100,14 @@ export class AttestationVerifier {
       claims.platformAuth = true; // Skip if explicitly disabled
     }
 
-    // 4. Verify output binding (session + output hash)
+    // 5. Verify output binding (session + output hash)
     const bindingResult = this.verifyOutputBinding(evidence, transformedContext);
     claims.sessionBinding = bindingResult.valid;
     if (!bindingResult.valid) {
       errors.push(`Output binding verification failed: ${bindingResult.error}`);
     }
 
-    // 5. Verify config binding (if expected config hash provided)
+    // 6. Verify config binding (if expected config hash provided)
     if (options.expectedConfigHash) {
       if (evidence.configHash === options.expectedConfigHash) {
         claims.configBinding = true;
@@ -113,7 +120,7 @@ export class AttestationVerifier {
       claims.configBinding = true; // No expectation, pass by default
     }
 
-    // 6. Verify timestamp freshness
+    // 7. Verify timestamp freshness
     const maxAge = options.maxAge ?? 5 * 60 * 1000; // Default 5 minutes
     const age = Date.now() - evidence.timestamp;
     if (age <= maxAge && age >= 0) {
@@ -124,7 +131,7 @@ export class AttestationVerifier {
       errors.push(`Attestation too old: ${Math.floor(age / 1000)}s (max: ${Math.floor(maxAge / 1000)}s)`);
     }
 
-    // 7. Verify nonce if provided
+    // 8. Verify nonce if provided
     if (options.nonce) {
       // Nonce verification would check report_data includes the nonce
       // For now, this is a placeholder for future implementation

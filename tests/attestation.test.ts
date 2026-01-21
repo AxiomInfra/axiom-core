@@ -316,6 +316,43 @@ describe("Attestation Binding Tests", () => {
     });
   });
 
+  describe("Evidence schema validation", () => {
+    it("should reject unsupported evidence version", async () => {
+      const context = createMockContext();
+      const evidence = {
+        ...createMockEvidence(context),
+        version: "0.9",
+      } as AttestationEvidence;
+
+      const verdict = await verifier.verify(evidence, context, {
+        expectedMeasurement: validMeasurement,
+      });
+
+      assert.strictEqual(verdict.valid, false);
+      assert.ok(
+        verdict.errors?.some((e) => e.includes("Unsupported attestation version")),
+        "Should report version error"
+      );
+    });
+
+    it("should reject malformed session ID", async () => {
+      const context = createMockContext();
+      const evidence = createMockEvidence(context, {
+        sessionId: "not-hex-session-id",
+      });
+
+      const verdict = await verifier.verify(evidence, context, {
+        expectedMeasurement: validMeasurement,
+      });
+
+      assert.strictEqual(verdict.valid, false);
+      assert.ok(
+        verdict.errors?.some((e) => e.includes("Session ID")),
+        "Should report session ID error"
+      );
+    });
+  });
+
   describe("Complete verification verdict", () => {
     it("should produce valid verdict for genuine evidence", async () => {
       const context = createMockContext();
