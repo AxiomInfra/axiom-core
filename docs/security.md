@@ -1,16 +1,16 @@
-# Axiom Core Security Model (v0.x)
+# Axiom Core Security Model (v1.0)
 
-**Version:** 0.x  
-**Last Updated:** 2026-01-18  
-**Status:** Preview
+**Version:** 1.0  
+**Last Updated:** 2026-01-21  
+**Status:** v1.0 (attested tier requires native runner)
 
-**Note:** Enclave/attested content in this document is experimental preview only. It is opt-in, non-production, and does not provide v0.x guarantees.
+**Note:** Attested execution is opt-in and requires the native enclave runner. Simulator mode provides no security guarantees.
 
 ---
 
 ## Overview
 
-The Axiom Core v0.x implements a software-enforced semantic boundary. An experimental enclave preview explores TEE-based isolation and attestation. This document defines the threat model, security properties, and limitations of the system.
+The Axiom Core v1.0 implements a software-enforced semantic boundary with optional attested execution. This document defines the threat model, security properties, and limitations of the system.
 
 ## Threat Model
 
@@ -23,11 +23,11 @@ The following assets are considered sensitive and require protection:
    - Any text containing personally identifiable information (PII)
    - Business-sensitive data and confidential information
 
-2. **Identity Mappings**
+2. **Identity Mappings (if maintained by integrator)**
    - Relationships between original names/identifiers and synthetic entity IDs
-   - The mapping table that allows "reinflation" of transformed context
+   - The SDK does not expose a mapping; reinflation is an external concern
 
-3. **Transformation Internals** (optional protection in v0.x)
+3. **Transformation Internals** (optional protection in v1.0)
    - Intermediate representations during semantic analysis
    - Entity extraction patterns and heuristics
 
@@ -114,7 +114,7 @@ The Axiom Core is designed to protect against the following threat actors:
 
 ---
 
-## Security Properties (In-Scope for v0.x)
+## Security Properties (In-Scope for v1.0)
 
 ### 1. Local-Only Raw Data Processing
 
@@ -123,7 +123,7 @@ The Axiom Core is designed to protect against the following threat actors:
 **Enforcement:**
 - No network calls in SDK codebase (verified by `assertNoNetworkAccess()`)
 - Boundary validation prevents serialization of raw text
-- Enclave I/O is constrained (no filesystem, no network within TEE)
+- Enclave I/O is intended to be constrained in the native runner (simulator does not enforce)
 
 **Verification:** Static analysis + runtime boundary checks
 
@@ -142,15 +142,15 @@ The Axiom Core is designed to protect against the following threat actors:
 
 **Preview Property:** Attestation evidence is intended to support verification of:
 - **Code identity** (measurement of enclave binary)
-- **Platform authenticity** (AMD SEV-SNP signature chain)
+- **Platform authenticity** (AMD SEV-SNP signature chain; planned)
 - **Output binding** (session_id, config_hash, output_hash)
 
 **Enforcement:**
 - AMD SEV-SNP hardware generates attestation report
 - Report includes custom data binding session and output
-- Signature chain validates to AMD root of trust
+- Signature chain validation is planned; current verifier checks structure and signature presence
 
-**Verification:** `AttestationVerifier` validates all claims
+**Verification:** `AttestationVerifier` validates structure/binding now; full signature chain validation is pending
 
 ### 4. Explicit Failure on Unsafe Conditions
 
@@ -213,7 +213,7 @@ The Axiom Core is designed to protect against the following threat actors:
 **Why Out-of-Scope:**
 - Baseline mitigations assumed (OS-level, microcode updates)
 - Advanced side-channel attacks require co-location and sophisticated measurement
-- Performance cost of comprehensive mitigation too high for v0.x
+- Performance cost of comprehensive mitigation too high for v1.0
 
 **Mitigation Guidance:**
 - Keep systems patched (CPU microcode, kernel, hypervisor)
@@ -240,7 +240,7 @@ The Axiom Core is designed to protect against the following threat actors:
 
 **Why Out-of-Scope:**
 - ZK proofs add significant complexity and performance cost
-- v0.x focuses on attestation-based verification
+- v1.0 focuses on attestation-based verification
 - Planned for v2.0
 
 **Mitigation Guidance:**
@@ -258,7 +258,7 @@ Axiom implements multiple layers of security:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ Layer 4: Attestation Verification (Cryptographic Proof)     │
-│  - AMD SEV-SNP signature chain validation                   │
+│  - Report parsing + signature presence (chain validation TBD)│
 │  - Measurement verification                                 │
 │  - Output binding checks                                    │
 └─────────────────────────────────────────────────────────────┘
@@ -294,11 +294,12 @@ Axiom implements multiple layers of security:
 2. **TypeScript SDK** (trusted for policy enforcement)
    - Enforces configuration and boundary checks
    - Coordinates enclave execution
-   - No sensitive processing in JavaScript
+   - Performs transformation in standard tier (software-only)
 
 3. **Enclave Runner** (trusted for execution)
-   - Native Rust code with memory safety
-   - Runs inside TEE when attested tier enabled
+   - Native Rust code with memory safety (private repo)
+   - Runs inside TEE when native mode is available
+   - Simulator mode provides no hardware isolation
    - Generates attestation evidence
 
 4. **AMD SEV-SNP Platform** (trusted for hardware isolation)
@@ -323,6 +324,7 @@ Axiom implements multiple layers of security:
 - Software boundary enforcement
 - No network calls
 - Explicit failure on violations
+- Enclave setting is ignored (software-only)
 
 **Use When:**
 - TEE not available or not required
@@ -337,16 +339,16 @@ Axiom implements multiple layers of security:
 
 **Properties (preview):**
 - All `standard` tier properties
-- TEE hardware isolation
+- TEE hardware isolation when a native runner is available
 - Attestation evidence intended for verification
-- Verifiable execution
+- Verifiable execution (native mode only)
 
 **Use When:**
 - Handling highly sensitive data
 - Regulatory compliance may require attestation (outside SDK scope)
 - Zero-trust architecture
 
-**Requirements:**
+**Requirements (native mode):**
 - AMD SEV-SNP capable hardware
 - Enclave runner installed
 - Configuration: `enclave: "required"` or `"auto"`
@@ -361,13 +363,15 @@ Explicitly disables TEE, even if available. Transformation runs in standard proc
 
 #### `enclave: "auto"`
 
-Use TEE if available, otherwise fail (when `attested` tier) or continue (when `standard` tier).
+Use native enclave if available; otherwise fall back to the simulator for `attested` tier. Standard tier always runs software-only.
 
-**Use:** Deployments needing fallback behavior (preview).
+**Use:** Development and integration where simulator is acceptable (preview).
 
 #### `enclave: "required"`
 
-Fail explicitly if TEE unavailable. No fallback.
+Fail explicitly if native TEE unavailable. No simulator fallback.
+
+**Note:** `platform.verificationMode` is a consumer-side policy hint; the SDK does not enforce verification mode.
 
 **Use:** Maximum security posture, regulated environments.
 
@@ -377,7 +381,7 @@ Fail explicitly if TEE unavailable. No fallback.
 
 ### Deployment Recommendations
 
-1. **Confidential VM Pattern** (Recommended for v0.x)
+1. **Confidential VM Pattern** (Recommended for v1.0)
    - Deploy SDK in AMD SEV-SNP confidential virtual machine
    - Client controls VM, cloud provider cannot access memory
    - Clear attestation story for enterprise compliance
@@ -502,7 +506,7 @@ sequenceDiagram
 
 | Version | Date       | Changes |
 |---------|------------|---------|
-| 0.1.0   | 2026-01-18 | v0 MVP with software-only boundary enforcement |
+| 1.0.0   | 2026-01-21 | v1.0 SDK release with optional attested execution |
 
 ---
 

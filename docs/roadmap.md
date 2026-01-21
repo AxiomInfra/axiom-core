@@ -2,7 +2,7 @@
 
 ## Overview
 
-This roadmap outlines the evolution from software-only boundary enforcement (v0.x) to hardware-backed attestation (v1.x) and future privacy goals (v2.x+). It is directional and may change based on hardware availability and integration feedback.
+This roadmap outlines the evolution from software-only boundary enforcement (v0.x) to hardware-backed attestation (v1.0) and future privacy goals (v2.x+). It is directional and may change based on hardware availability and integration feedback.
 
 ---
 
@@ -18,9 +18,9 @@ This roadmap outlines the evolution from software-only boundary enforcement (v0.
 
 ---
 
-## v1.0 (Next) - TEE Integration & Attestation
+## v1.0 (Completed) - TEE Integration & Attestation
 
-**Status:** In progress (TypeScript complete, Rust pending)
+**Status:** Complete
 
 ### Definition of Done
 1. Transformation executes inside TEE (or fails when enclave required)
@@ -29,7 +29,7 @@ This roadmap outlines the evolution from software-only boundary enforcement (v0.
 4. No raw data egress at software and hardware boundaries
 5. Reproducible build with published measurements
 
-### Complete (TypeScript Layer)
+### Complete
 - Canonical serialization and hashing
 - Session management and binding data
 - Attestation types, parser, and verifier
@@ -37,12 +37,9 @@ This roadmap outlines the evolution from software-only boundary enforcement (v0.
 - Updated `Axiom.reason()` API and executor routing
 - Documentation (README, ARCHITECTURE, SECURITY, INTEGRATION, ENCLAVE_INTERFACE)
 
-### In Progress (Rust Enclave Runner)
-- Core transformation pipeline in Rust
-- SEV-SNP report generation
-- N-API bindings
-- Reproducible build tooling
-- End-to-end attested integration tests
+### Notes
+- Native runner lives in the private `axiom-enclave-runner` repo
+- Simulator mode remains available for development/testing
 
 ---
 
@@ -68,7 +65,7 @@ This roadmap outlines the evolution from software-only boundary enforcement (v0.
 
 ## Maintenance & Support
 
-- v0.x: Maintenance mode after v1.0 stable
+- v0.x: Maintenance mode
 - v1.0: Long-term support for critical fixes
 - v1.x+: Feature velocity with backward compatibility
 

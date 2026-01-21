@@ -1,14 +1,14 @@
 # Axiom Core Status
 
-**Status:** TypeScript core complete; Rust enclave runner in progress  
-**Date:** 2026-01-18  
-**Version:** 0.1.0-alpha.1
+**Status:** v1.0 complete; native enclave runner in private repo  
+**Date:** 2026-01-21  
+**Version:** 1.0.0
 
 ---
 
 ## Summary
 
-The TypeScript core is feature-complete with deterministic transformation, boundary enforcement, and attestation verification. The Rust enclave runner exists as a scaffold with simulator support; real SEV-SNP integration remains in progress. Simulator mode enables end-to-end development and testing without hardware.
+The v1.0 SDK is feature-complete with deterministic transformation, boundary enforcement, and attestation verification (structure + binding checks). The native enclave runner lives in the private repo with simulator support; full SEV-SNP signature chain validation remains in progress. Simulator mode enables end-to-end development and testing without hardware.
 
 ---
 
@@ -25,15 +25,13 @@ The TypeScript core is feature-complete with deterministic transformation, bound
 ### Rust Enclave Runner
 - Project structure moved to private `axiom-enclave-runner` repo
 - Simulator workflow supported for development
-- Real SEV-SNP attestation and N-API hardening in progress
+- SEV-SNP attestation integration and signature chain validation in progress
 
 ---
 
 ## Test Status
 
-- Boundary tests: 5/5 passing
-- Canonical tests: 15/15 passing
-- Attestation tests: 11/15 passing (simulator adjustments in progress)
+- Test suite includes boundary, canonical, attestation, and attested integration (simulator) tests.
 
 ---
 
@@ -43,7 +41,7 @@ Core documentation is present and up to date:
 - `README.md` (overview and quick start)
 - `docs/architecture.md` (system design)
 - `docs/security.md` (threat model and guarantees)
-- `docs/roadmap.md` (v0.x through v2.x)
+- `docs/roadmap.md` (v1.x through v2.x)
 - `docs/INTEGRATION.md` (integration guide)
 - `docs/ENCLAVE_INTERFACE.md` (TS ↔ Rust contract)
 

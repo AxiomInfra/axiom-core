@@ -1,10 +1,10 @@
 # Axiom Core Integration Guide
 
-**Version:** 0.x  
-**Last Updated:** 2026-01-18  
+**Version:** 1.0  
+**Last Updated:** 2026-01-21  
 **Audience:** Developers integrating Axiom Core into applications
 
-**Note:** Enclave/attested sections are experimental preview only. They are opt-in, non-production, and do not provide v0.x guarantees.
+**Note:** Attested execution is opt-in and requires the native enclave runner. Simulator mode provides no security guarantees.
 
 ---
 
@@ -50,14 +50,15 @@ const result = await axiom.reason({
 console.log(result.transformedContext);
 // {
 //   entities: [
-//     { syntheticId: "ENTITY_0001", role: "Actor", attributes: {...} },
-//     { syntheticId: "ENTITY_0002", role: "Participant", attributes: {...} },
-//     { syntheticId: "ENTITY_0003", role: "Value", attributes: {...} },
-//     { syntheticId: "ENTITY_0004", role: "Obligation", attributes: {...} }
+//     { syntheticId: "ENTITY_0000", role: "Actor", attributes: { type: "name", position: 0 } },
+//     { syntheticId: "ENTITY_0001", role: "Actor", attributes: { type: "name", position: 38 } },
+//     { syntheticId: "ENTITY_0002", role: "Value", attributes: { type: "currency", position: 20, numericValue: 50000 } },
+//     { syntheticId: "ENTITY_0003", role: "Temporal", attributes: { type: "date", position: 62 } }
 //   ],
 //   relations: [
-//     { type: "signed", from: "ENTITY_0001", to: "ENTITY_0003" },
-//     { type: "with", from: "ENTITY_0001", to: "ENTITY_0002" }
+//     { type: "related", from: "ENTITY_0000", to: "ENTITY_0001" },
+//     { type: "owns", from: "ENTITY_0000", to: "ENTITY_0002" },
+//     { type: "dated", from: "ENTITY_0002", to: "ENTITY_0003" }
 //   ],
 //   task: "Analyze this business transaction"
 // }
@@ -155,9 +156,13 @@ const result = await axiom.reason({
 
 | Mode | Behavior | Standard Tier | Attested Tier |
 |---|---|---|---|
-| `"none"` | Never use enclave | Yes (local execution) | No (invalid config) |
-| `"auto"` | Use if available | Yes (enclave or local) | Yes (fail if unavailable) |
-| `"required"` | Must use enclave | Yes (fail if unavailable) | Yes (fail if unavailable) |
+| `"none"` | Never use enclave | Always software-only | Invalid config |
+| `"auto"` | Prefer native enclave; fallback to simulator | Always software-only | Native if available, otherwise simulator |
+| `"required"` | Must use native enclave | Always software-only | Fail if native unavailable |
+
+**Note:** In the current implementation, `enclave` is only used when `securityTier` is `"attested"`. Standard tier always runs the software pipeline.
+
+**Native runner:** The native enclave path requires the optional dependency `@axiom-infra/enclave-runner` to be installed.
 
 ### Platform Options
 
@@ -168,7 +173,7 @@ const config: AxiomConfig = {
   policyVersion: "v1",
   platform: {
     type: "sev-snp",              // Currently only SEV-SNP supported
-    verificationMode: "strict"    // or "permissive"
+    verificationMode: "strict"    // or "permissive" (consumer policy)
   }
 };
 ```
@@ -176,6 +181,8 @@ const config: AxiomConfig = {
 **Verification Modes:**
 - `"strict"`: All claims must pass (stricter verification; preview)
 - `"permissive"`: Allow warnings (development, simulator)
+
+**Note:** `platform.verificationMode` is a configuration hint for consumers; it is not enforced by the SDK.
 
 ---
 
@@ -224,6 +231,10 @@ console.log(result.attestationEvidence); // undefined
 - Cryptographic attestation
 - Verifiable execution
 - Hardware boundary enforcement
+
+**Simulator fallback (auto mode):**
+- If the native enclave runner is unavailable and `enclave: "auto"`, the SDK uses a simulator.
+- Simulator reports are marked and should only be accepted in permissive verification.
 
 **Example:**
 
@@ -278,8 +289,13 @@ if (result.attestationEvidence) {
       measurement: result.attestationEvidence.measurement,
       sessionId: result.attestationEvidence.sessionId,
       outputHash: result.attestationEvidence.outputHash,
+      configHash: result.attestationEvidence.configHash,
       timestamp: result.attestationEvidence.timestamp,
-      report: Buffer.from(result.attestationEvidence.report).toString('base64')
+      version: result.attestationEvidence.version,
+      report: Buffer.from(result.attestationEvidence.report).toString("base64"),
+      signature: result.attestationEvidence.signature
+        ? Buffer.from(result.attestationEvidence.signature).toString("base64")
+        : undefined
     },
     verificationHint: result.verificationHint
   };
@@ -306,8 +322,12 @@ async function verifyAndProcess(payload: any) {
     sessionId: payload.evidence.sessionId,
     outputHash: payload.evidence.outputHash,
     timestamp: payload.evidence.timestamp,
-    report: Uint8Array.from(Buffer.from(payload.evidence.report, 'base64')),
-    version: "0.x"
+    report: Uint8Array.from(Buffer.from(payload.evidence.report, "base64")),
+    configHash: payload.evidence.configHash,
+    signature: payload.evidence.signature
+      ? Uint8Array.from(Buffer.from(payload.evidence.signature, "base64"))
+      : undefined,
+    version: "1.0"
   };
   
   const context: TransformedContext = payload.transformedContext;
@@ -336,6 +356,8 @@ async function verifyAndProcess(payload: any) {
 }
 ```
 
+**Simulator detection:** Simulator reports are marked with a `FAKE` report header and a `simulator_measurement_...` value. Treat simulator evidence as non-production and verify only in permissive mode.
+
 ### Verification Options
 
 ```typescript
@@ -352,13 +374,15 @@ const verdict = await verifier.verify(evidence, context, {
   // Optional: Verification mode (default "strict")
   mode: "strict",
   
-  // Optional: Custom nonce for freshness
+  // Optional: Custom nonce for freshness (not yet implemented)
   nonce: "custom_nonce_value",
   
   // Optional: Skip signature chain validation
   validateSignatureChain: false
 });
 ```
+
+**Note:** Signature chain validation is a placeholder in the current verifier implementation; it checks report structure but does not yet validate the full AMD certificate chain.
 
 ---
 
@@ -390,7 +414,7 @@ async function secureReasoning(userInput: string) {
   
   // Call LLM with de-identified context
   const completion = await openai.chat.completions.create({
-    model: "gpt-4",
+    model: "gpt-5",
     messages: [
       { role: "system", content: "You are analyzing de-identified semantic data." },
       { role: "user", content: prompt }
@@ -873,7 +897,7 @@ app.listen(3000, () => console.log("Axiom service running on :3000"));
 
 ## Performance Considerations
 
-### Expected Latencies (v0.x)
+### Expected Latencies (v1.0)
 
 | Operation | Latency | Notes |
 |---|---|---|
@@ -927,7 +951,7 @@ app.listen(3000, () => console.log("Axiom service running on :3000"));
 
 **Error:**
 ```
-ConfigurationError: securityTier 'attested' cannot be used with enclave 'none'
+ConfigurationError: Invalid configuration: securityTier "attested" requires enclave to be "auto" or "required"
 ```
 
 **Solution:**
@@ -992,17 +1016,17 @@ Verdict: { valid: false, errors: ["Measurement mismatch: ..."] }
 
 **Error:**
 ```
-TransformationError: Enclave runner not available or configured to 'none'
+ConfigurationError: Enclave execution required but not available
 ```
 
 **Solutions:**
 
-1. Check enclave runner is installed
+1. Check enclave runner is installed (for native mode)
   ```bash
   ls node_modules/@axiom-infra/enclave-runner/
   ```
 
-2. Use simulator mode for development
+2. Use simulator mode for development (auto mode)
    ```typescript
    const axiom = new Axiom({
      securityTier: "attested",
@@ -1142,7 +1166,7 @@ async function getExpectedMeasurement(version: string): Promise<string> {
 }
 
 // Use in verification
-const expectedMeasurement = await getExpectedMeasurement("0.1.0");
+const expectedMeasurement = await getExpectedMeasurement("1.0.0");
 const verdict = await verifier.verify(evidence, context, {
   expectedMeasurement
 });
@@ -1160,6 +1184,6 @@ const verdict = await verifier.verify(evidence, context, {
 
 ---
 
-**Document Version:** 0.x  
-**Last Updated:** 2026-01-18
+**Document Version:** 1.0  
+**Last Updated:** 2026-01-21
 

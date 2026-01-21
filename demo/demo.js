@@ -11,7 +11,7 @@ import { Axiom, AttestationVerifier } from "../src/index.ts";
 import { writeFileSync } from "fs";
 
 console.log("╔════════════════════════════════════════════════════════════════╗");
-console.log("║           Axiom Core v0.x - Demo Script                        ║");
+console.log("║           Axiom Core v1.0 - Demo Script                        ║");
 console.log("╚════════════════════════════════════════════════════════════════╝\n");
 
 // Example sensitive data

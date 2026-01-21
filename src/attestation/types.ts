@@ -1,6 +1,6 @@
 /**
- * Attestation types for Axiom Core v0.x.
- * Experimental preview only; attestation is opt-in and not a v0.x guarantee.
+ * Attestation types for Axiom Core v1.0.
+ * Attestation is opt-in and requires the native enclave runner.
  */
 
 /**

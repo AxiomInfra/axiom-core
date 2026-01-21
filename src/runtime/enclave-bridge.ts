@@ -1,6 +1,6 @@
 /**
  * Experimental enclave bridge. This is an opt-in preview path and does not
- * provide v0.x guarantees. The default v0.x flow remains software-only.
+ * provide v1.0 guarantees. The default v1.0 flow remains software-only unless attested tier is used.
  */
 import type {
   EnclaveRequest,

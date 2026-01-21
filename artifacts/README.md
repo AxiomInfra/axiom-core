@@ -1,6 +1,6 @@
 # Axiom Core Example Artifacts
 
-This directory contains example outputs from the Axiom Core v0.x to demonstrate the attestation and verification workflow.
+This directory contains example outputs from the Axiom Core v1.0 to demonstrate the attestation and verification workflow.
 
 ## Files
 
@@ -81,7 +81,7 @@ console.log('Claims:', verdict.claims);
    ↓ (Axiom Core)
    
    ENTITY_0001 (Actor), ENTITY_0002 (Value), ...
-   Relation: signed(ENTITY_0001, ENTITY_0003)
+   Relation: related(ENTITY_0001, ENTITY_0002)
    ```
 
 2. **Transformation → Evidence**
@@ -228,29 +228,25 @@ if (!verdict.claims.freshness) {
 
 ## Generating Your Own Examples
 
-### Standard Tier
+### Demo Script (Standard + Attested Simulator)
 
 ```bash
-cd demo
 npm install
-npm run demo:standard
-# Outputs to artifacts/my-example.json
+npm run demo
+# Outputs to artifacts/demo-output.json
 ```
 
-### Attested Tier (Simulator)
+If your shell blocks npm scripts:
 
 ```bash
-npm run demo:attested-simulator
-# Outputs to artifacts/my-attested-example.json
+node --experimental-strip-types demo/demo.js
 ```
 
-### Attested Tier (Real SEV-SNP)
+### Attested Tier (Real SEV-SNP, Preview)
 
-```bash
-# Requires SEV-SNP VM
-npm run demo:attested-real
-# Outputs to artifacts/my-hardware-example.json
-```
+- Install the native enclave runner (`@axiom-infra/enclave-runner`).
+- Update the demo config to `enclave: "required"`.
+- Run the demo as above in a SEV-SNP VM.
 
 ## Questions?
 
@@ -260,6 +256,6 @@ npm run demo:attested-real
 
 ---
 
-**Last Updated:** 2026-01-18  
-**Version:** 1.0
+**Last Updated:** 2026-01-21  
+**Version:** 1.0.0
 
