@@ -35,6 +35,9 @@
     "open-core"
   ],
   "dependencies": {},
+  "optionalDependencies": {
+    "@axiom-infra/enclave-runner": "0.1.0"
+  },
   "devDependencies": {
     "@types/node": "^20.11.0"
   },
