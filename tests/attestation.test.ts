@@ -7,7 +7,8 @@ import { hash } from "../src/core/canonical.ts";
 import { createHash, randomBytes } from "crypto";
 
 describe("Attestation Binding Tests", () => {
-  const validMeasurement = "SIMULATED_MEASUREMENT_ABC123";
+  const validMeasurement =
+    "simulator_measurement_0000000000000000000000000000000000000000000000000000000000000000";
   const verifier = new AttestationVerifier();
 
   function createMockContext(): TransformedContext {
@@ -257,7 +258,9 @@ describe("Attestation Binding Tests", () => {
         "Code identity check should fail"
       );
       assert.ok(
-        verdict.errors?.some((e) => e.includes("Measurement mismatch")),
+        verdict.errors?.some(
+          (e) => e.includes("Evidence measurement mismatch") || e.includes("Measurement mismatch")
+        ),
         "Should report measurement mismatch"
       );
     });
