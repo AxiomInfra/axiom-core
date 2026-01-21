@@ -14,6 +14,9 @@ import { createHash } from "crypto";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
+const SIMULATOR_MEASUREMENT =
+  "simulator_measurement_0000000000000000000000000000000000000000000000000000000000000000";
+
 type NativeRunnerModule = {
   initialize?: () => string;
   transform: (requestJson: string) => Promise<string> | string;
@@ -241,7 +244,7 @@ class SimulatorEnclaveRunner implements IEnclaveRunner {
     );
 
     // Fake measurement (deterministic for testing)
-    const measurement = "simulator_measurement_0000000000000000000000000000000000000000000000000000000000000000";
+    const measurement = SIMULATOR_MEASUREMENT;
 
     return {
       transformedContext: transformedBytes,
@@ -282,7 +285,13 @@ class SimulatorEnclaveRunner implements IEnclaveRunner {
     // Version
     report.writeUInt32LE(1, 4);
 
-    // Embed custom data: SHA-256(sessionId || configHash || outputHash)
+    // Embed measurement at standard offset (48..96)
+    const measurementBytes = Buffer.from(measurement, "hex");
+    if (measurementBytes.length === 48) {
+      measurementBytes.copy(report, 48);
+    }
+
+    // Embed custom data: SHA-256(sessionId || configHash || outputHash || timestamp)
     const reportData = createHash("sha256");
     reportData.update(sessionId);
     reportData.update(configHash);
