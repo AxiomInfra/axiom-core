@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import { Axiom } from "../src/core/axiom.ts";
-import { BoundaryViolationError } from "../src/core/errors.ts";
+import { BoundaryViolationError, ConfigurationError } from "../src/core/errors.ts";
 import { Distiller } from "../src/transform/distiller.ts";
 import { Abstractor } from "../src/transform/abstraction.ts";
 import { Masker } from "../src/transform/masking.ts";
@@ -360,6 +360,29 @@ describe("Boundary Enforcement", () => {
       const serialized = JSON.stringify(result);
       assert.ok(!serialized.includes("Tom"));
       assert.ok(!serialized.includes("Jerry"));
+    });
+  });
+
+  describe("Enclave required enforcement", () => {
+    it("should fail when enclave is required but unavailable", async () => {
+      const axiom = new Axiom({
+        securityTier: "attested",
+        enclave: "required",
+        policyVersion: "v1",
+        platform: {
+          type: "sev-snp",
+          verificationMode: "strict",
+        },
+      });
+
+      await assert.rejects(
+        async () =>
+          axiom.reason({
+            context: "Alice paid Bob $10.",
+            task: "analyze payment",
+          }),
+        (error) => error instanceof ConfigurationError
+      );
     });
   });
 });
