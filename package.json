@@ -1,7 +1,7 @@
 {
   "name": "@axiom-infra/core",
   "version": "1.0.0",
-  "description": "Local semantic boundary engine for private AI reasoning",
+  "description": "Local semantic transformation for private AI reasoning",
   "author": "Axiom Core Team <hello@axiominfra.cloud>",
   "repository": {
     "type": "git",
@@ -17,7 +17,6 @@
     "build": "tsc",
     "build:enclave": "cd enclave/runner && cargo build --release",
     "test": "node --test --experimental-strip-types tests/boundary.test.ts tests/canonical.test.ts tests/attestation.test.ts tests/attested.integration.test.ts",
-    "test": "node --test --experimental-strip-types tests/boundary.test.ts tests/canonical.test.ts tests/attestation.test.ts",
     "test:boundary": "node --test --experimental-strip-types tests/boundary.test.ts",
     "test:canonical": "node --test --experimental-strip-types tests/canonical.test.ts",
     "test:attestation": "node --test --experimental-strip-types tests/attestation.test.ts",
