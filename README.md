@@ -1,23 +1,29 @@
-# Axiom Core (v1.0)
+# Axiom Core (Early Access)
 
 **Local semantic transformation for private AI reasoning.**
 
-Axiom Core is the v1.0 execution layer of the Axiom system. It transforms sensitive local input into non-identifying semantic representations so cloud models can reason over structure without seeing raw data.
+> **Status:** Early-access infrastructure SDK.  
+> APIs, guarantees, behavior, and licensing details may change.
 
-The SDK performs semantic transformation locally: removing identifying information while preserving the relational structure required for reasoning.
+Axiom Core is an early-access execution layer for transforming sensitive local input into **non-identifying semantic representations**, enabling cloud models to reason over structure without access to raw data.
+
+The SDK performs semantic transformation locally by removing identifying information while preserving the relational structure required for reasoning.
+
+This repository is shared for **transparency and early technical validation**, not as a production-ready security boundary.
 
 ---
 
 ## Table of Contents
 
+- [Overview](#overview)
+- [Design Intent](#design-intent)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Guarantees (v1.0)](#guarantees-v10)
-- [Features](#features)
+- [Design Guarantees (Current Scope)](#design-guarantees-current-scope)
 - [What This SDK Is](#what-this-sdk-is)
 - [What This SDK Is Not](#what-this-sdk-is-not)
 - [High-Level Architecture](#high-level-architecture)
-- [Security Model (v1.0)](#security-model-v10)
+- [Security Model (Current Scope)](#security-model-current-scope)
 - [Experimental: Enclave Execution (Preview)](#experimental-enclave-execution-preview)
 - [Repository Structure](#repository-structure)
 - [Contributing](#contributing)
@@ -26,24 +32,44 @@ The SDK performs semantic transformation locally: removing identifying informati
 
 ---
 
+## Overview
+
+Many high-value AI workflows are blocked today because sensitive data cannot move to the cloud.
+
+Existing approaches typically:
+- redact information and break reasoning
+- encrypt data and block inference
+- rely on local models with limited quality
+
+Axiom Core explores an alternative approach: **preserving semantic structure while removing identity**, so modern models can reason without seeing raw data.
+
+---
+
+## Design Intent
+
+Axiom Core is built with the following intent:
+
+- Correctness over convenience  
+- Deterministic behavior over heuristics  
+- Explicit boundaries over implicit trust  
+- Known failure modes over undefined behavior  
+
+The SDK is designed to fail explicitly when boundaries are violated and to make assumptions and limitations visible.
+
+---
+
 ## Installation
 
 ### Requirements
 
 - Node.js >= 20.0.0
-- npm >= 9.0.0 (or Yarn/pnpm)
+- npm >= 9.0.0 (or Yarn / pnpm)
 
 ### Install
 
 ```bash
 npm install @axiom-infra/core
-```
-
-```bash
-yarn add @axiom-infra/core
-```
-
----
+yarn add @axiom-infra/core ```
 
 ## Usage
 
@@ -64,102 +90,76 @@ const result = await axiom.reason({
   model: "gpt-5",
 });
 
-// Send only result.transformedContext to cloud
-```
+// Only result.transformedContext is intended to be sent to the cloud
 
-### Local Demo (from this repo)
 
-```bash
+Local Demo (from this repository)
 npm install
 npm run demo
-```
 
-If your shell blocks npm scripts, run:
 
-```bash
+If your shell blocks npm scripts:
+
 node --experimental-strip-types demo/demo.js
-```
 
-### Advanced Usage (Preview)
+Design Guarantees (Current Scope)
 
-```ts
-const axiomPreview = new Axiom({
-  securityTier: "attested",
-  enclave: "auto",
-  policyVersion: "v1",
-});
-```
+The following properties describe intended behavior within the current SDK-controlled execution scope.
+They are not contractual guarantees and may evolve as the system matures.
 
-For full integration details, see `docs/INTEGRATION.md`.
+Property	Description
+No raw data transmission	Raw input data is not transmitted by the SDK
+Local transformation	Semantic transformation occurs locally
+Explicit network calls	No implicit network calls are performed
+Fail-fast boundaries	Boundary violations fail explicitly
+No identity mapping output	Raw ↔ transformed mappings are not exposed
 
----
+These properties apply only to SDK-controlled execution paths.
 
-## Guarantees (v1.0)
+What This SDK Is
 
-When invoking `axiom.reason(...)` in the **standard** tier, the SDK provides:
+Axiom Core is infrastructure, not an application.
 
-| Guarantee | Description |
-|-----------|-------------|
-| **No raw data transmission** | Raw input data is not transmitted by the SDK |
-| **Local transformation** | Semantic transformation occurs locally |
-| **Explicit network calls** | No implicit network calls are performed |
-| **Fail-fast boundaries** | Boundary violations fail explicitly |
-| **No identity mapping output** | The SDK does not expose a raw↔synthetic mapping |
+It is designed to be embedded in systems where:
 
-These guarantees apply only to SDK-controlled execution paths.
+Sensitive data should not be transmitted externally
 
----
+Frontier models are still required for reasoning
 
-## Features
-
-- Local semantic abstraction pipeline
-- Entity and role modeling
-- Deterministic canonicalization and hashing
-- Explicit boundary enforcement and fail-fast errors
-- Zero data retention by default (SDK-controlled paths)
-- Optional attestation evidence in the attested preview tier
-
----
-
-## What This SDK Is
-
-Axiom Core is **infrastructure**, not an application.
-
-It is designed to be embedded into systems where:
-
-- Private data should not be transmitted to the cloud
-- Frontier models are still required for reasoning
-- Trust boundaries and auditability matter
+Trust boundaries and auditability matter
 
 At a high level, the SDK:
 
-- Executes semantic analysis on local input
-- Transforms raw data into non-identifying representations
-- Preserves entities, roles, and relationships
-- Enforces a strict boundary between local context and cloud models
+Performs semantic analysis on local input
 
----
+Transforms raw data into non-identifying representations
 
-## What This SDK Is Not
+Preserves entities, roles, and relationships
 
-To avoid ambiguity, Axiom Core is explicitly **not**:
+Enforces a strict boundary between local context and external models
 
-- A hosted service or proxy
-- A redaction or PII-masking tool
-- A compliance product or legal authority
-- A cryptographic encryption system
-- A local language model or inference engine
-- A cloud routing or billing layer
+What This SDK Is Not
 
-These concerns are intentionally outside the scope of this repository.
+To avoid ambiguity, Axiom Core is explicitly not:
 
----
+A hosted service or proxy
 
-## High-Level Architecture
+A redaction or PII-masking tool
 
-The Axiom system enforces a hard trust boundary.
+A compliance product or legal authority
 
-```
+A cryptographic encryption system
+
+A local language model or inference engine
+
+A cloud routing, billing, or orchestration layer
+
+These concerns are intentionally out of scope.
+
+High-Level Architecture
+
+Axiom Core operates entirely on the local side of a strict trust boundary.
+
 ┌─────────────────────────────────────────────────────────────────┐
 │  Local Environment (This SDK)                                   │
 │                                                                 │
@@ -170,99 +170,93 @@ The Axiom system enforces a hard trust boundary.
                              │
                              ▼ Transformed context only
 ┌─────────────────────────────────────────────────────────────────┐
-│  Cloud Boundary                                                 │
+│  External Model Boundary                                        │
 │                                                                 │
 │  • Receives non-identifying context only                        │
 │  • Performs reasoning using external models                     │
 │  • Never receives raw private data                              │
 └─────────────────────────────────────────────────────────────────┘
-```
 
-This repository operates entirely on the **local side** of that boundary.
+Security Model (Current Scope)
+Enforced Properties
 
----
+Within SDK-controlled execution paths, the system enforces:
 
-## Security Model (v1.0)
+No raw text serialization
 
-### Hard Guarantees
+No implicit network access
 
-Within its execution scope, the SDK enforces:
+Explicit local-to-external boundary enforcement
 
-- ✓ No raw text serialization
-- ✓ No implicit network access
-- ✓ Explicit local-to-cloud boundary enforcement
-- ✓ Zero data retention by default
+Zero data retention by default
 
-All guarantees apply only to SDK-controlled execution paths.
-
-### Trust Assumptions
+Trust Assumptions
 
 The SDK assumes:
 
-- The host operating system is honest-but-curious
-- The runtime environment is not actively malicious
+The host operating system is honest-but-curious
 
-The SDK is **not** designed to be safe under fully compromised host conditions.
+The runtime environment is not actively malicious
 
----
+The SDK is not designed to be safe under fully compromised host conditions.
 
-## Experimental: Enclave Execution (Preview)
+Experimental: Enclave Execution (Preview)
 
-The attested tier uses an enclave runner (private `@axiom-infra/enclave-runner`). It is **not** part of the core v1.0 guarantee set and is **not required** to run the SDK.
+Enclave execution is experimental and not required to use Axiom Core.
+
+This feature does not define the security posture of the SDK.
 
 Notes:
-- `enclave: "auto"` falls back to a simulator when the native runner is unavailable.
-- `enclave: "required"` fails if the native runner is unavailable.
-- Simulator mode provides **no security guarantees** and is for development only.
 
----
+enclave: "auto" may fall back to a simulator
 
-## Repository Structure
+enclave: "required" fails if a native runner is unavailable
 
-```
+Simulator mode provides no security guarantees and is intended for development only
+
+Repository Structure
 axiom-core/
-├── src/           # Core SDK implementation (v1.0)
+├── src/           # Core SDK implementation
 ├── demo/          # Demo script
-├── artifacts/     # Example evidence/verdicts
+├── artifacts/     # Example artifacts and outputs
 ├── docs/          # Design notes and specifications
 ├── tests/         # Unit and boundary tests
-├── STATUS.md      # Consolidated project status
+├── STATUS.md      # Project status and maturity notes
 ├── README.md
 ├── docs/architecture.md
 ├── docs/security.md
 ├── docs/roadmap.md
 └── LICENSE
-```
 
----
+Contributing
 
-## Contributing
+At this stage, Axiom Core is not accepting external code contributions.
 
-This project maintains high standards for correctness and clarity. Contributions are welcome for improvements to semantic correctness, documentation quality, and developer ergonomics.
+Feedback, issues, and discussion are welcome.
+Contribution guidelines will be published once the architecture and licensing model are finalized.
 
----
+License
 
-## License
+Axiom Core is released under the Apache 2.0 License.
 
-Axiom Core is released under the **Apache 2.0 License**.
+This repository represents an early-access, open component of the Axiom system.
+Other components may be licensed differently.
 
-This repository represents the open-core component of the Axiom system.
+Links
 
----
+Integration Guide: docs/INTEGRATION.md
 
-## Links
+Architecture: docs/architecture.md
 
-- Integration Guide: [`docs/INTEGRATION.md`](docs/INTEGRATION.md)
-- Architecture: [`docs/architecture.md`](docs/architecture.md)
-- Security: [`docs/security.md`](docs/security.md)
-- Roadmap: [`docs/roadmap.md`](docs/roadmap.md)
-- Status: [`STATUS.md`](STATUS.md)
-- Issues: [github.com/Axiom-Infra/axiom-core/issues](https://github.com/Axiom-Infra/axiom-core/issues)
-- Changelog: [`CHANGELOG.md`](CHANGELOG.md)
-- Contact: hello@axiominfra.cloud | security@axiominfra.cloud
+Security: docs/security.md
 
----
+Roadmap: docs/roadmap.md
 
-<p align="center">
-  <em>Axiom exists to make advanced reasoning possible<br><strong>without surrendering ownership of data.</strong></em>
-</p>
+Status: STATUS.md
+
+Issues: https://github.com/Axiom-Infra/axiom-core/issues
+
+Contact: hello@axiominfra.cloud
+ | security@axiominfra.cloud
+
+<p align="center"> <em>Axiom exists to preserve intelligence under constraint.</em> </p> ```
