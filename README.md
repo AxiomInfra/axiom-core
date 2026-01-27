@@ -157,6 +157,7 @@ These concerns are intentionally out of scope.
 
 Axiom Core operates entirely on the local side of a strict trust boundary.
 
+```
 ┌─────────────────────────────────────────────────────────────────┐
 │  Local Environment (This SDK)                                   │
 │                                                                 │
@@ -173,6 +174,7 @@ Axiom Core operates entirely on the local side of a strict trust boundary.
 │  • Performs reasoning using external models                     │
 │  • Never receives raw private data                              │
 └─────────────────────────────────────────────────────────────────┘
+```
 
 ## Security Model (Current Scope)
 
@@ -207,6 +209,8 @@ Notes:
 - Simulator mode provides no security guarantees and is intended for development only
 
 ## Repository Structure
+
+```
 axiom-core/
 ├── src/           # Core SDK implementation
 ├── demo/          # Demo script
@@ -219,6 +223,7 @@ axiom-core/
 ├── docs/security.md
 ├── docs/roadmap.md
 └── LICENSE
+```
 
 ## Contributing
 
